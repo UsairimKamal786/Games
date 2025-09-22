@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Rate Us</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100">
+  <section class="py-12 px-4">
+    <div class="max-w-2xl mx-auto text-center">
+      <h2 class="text-3xl font-bold text-gray-900">Rate Us</h2>
+      <p class="mt-2 text-lg text-gray-600">We’d love your feedback!</p>
+    </div>
+    <form id="feedbackForm" class="mt-8 max-w-xl mx-auto bg-white p-6 rounded-2xl shadow-lg">
+      <label class="block mb-4">
+        <span class="text-gray-700 font-medium">Your Name</span>
+        <input
+          type="text"
+          id="name"
+          required
+          class="mt-1 w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-blue-400"
+          placeholder="Enter your name"
+        />
+      </label>
+      <label class="block mb-4">
+        <span class="text-gray-700 font-medium">Rating</span>
+        <select
+          id="rating"
+          required
+          class="mt-1 w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-yellow-400"
+        >
+          <option value="">Select a rating</option>
+          <option>⭐⭐⭐⭐⭐ Excellent</option>
+          <option>⭐⭐⭐⭐ Good</option>
+          <option>⭐⭐⭐ Average</option>
+          <option>⭐⭐ Poor</option>
+          <option>⭐ Very Poor</option>
+        </select>
+      </label>
+      <label class="block mb-4">
+        <span class="text-gray-700 font-medium">Feedback</span>
+        <textarea
+          id="feedback"
+          rows="4"
+          required
+          class="mt-1 w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-green-400"
+          placeholder="Your feedback..."
+        ></textarea>
+      </label>
+      <button
+        type="submit"
+        class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl"
+      >
+        Send Feedback
+      </button>
+    </form>
+  </section>
+
+  <script>
+    document.getElementById('feedbackForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const name = encodeURIComponent(document.getElementById('name').value);
+      const rating = encodeURIComponent(document.getElementById('rating').value);
+      const feedback = encodeURIComponent(document.getElementById('feedback').value);
+
+      const email = 'usairimkamal2016@gmail.com';
+      const subject = encodeURIComponent('Website Feedback from ' + name);
+      const body = encodeURIComponent(`Name: ${name}\nRating: ${rating}\nFeedback:\n${feedback}`);
+
+      const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${email}&su=${subject}&body=${body}`;
+
+      window.open(gmailUrl, '_blank');
+    });
+  </script>
+</body>
+</html>
