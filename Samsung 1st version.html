@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Apple Ultra Pro Phone UI</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background-color: #f0f0f0;
+            font-family: Arial, sans-serif;
+        }
+
+        .iphone {
+            width: 320px;
+            height: 650px;
+            background: #000;
+            border-radius: 40px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            position: relative;
+            transition: background 0.3s ease-in-out;
+        }
+
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            padding: 5px 15px;
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        .battery {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .battery-icon {
+            width: 30px;
+            height: 15px;
+            border: 2px solid white;
+            border-radius: 3px;
+            position: relative;
+        }
+
+        .battery-level {
+            width: 100%;
+            height: 100%;
+            background: limegreen;
+            border-radius: 2px;
+            transition: width 0.5s ease-in-out, background 0.5s ease-in-out;
+        }
+
+        .battery-tip {
+            width: 3px;
+            height: 8px;
+            background: white;
+            position: absolute;
+            right: -5px;
+            top: 50%;
+            transform: translateY(-50%);
+            border-radius: 1px;
+        }
+
+        .screen {
+            width: 100%;
+            height: 500px;
+            background: #fff;
+            border-radius: 30px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-around;
+            align-items: center;
+            padding: 10px;
+            text-align: center;
+            overflow: hidden;
+            position: relative;
+            transition: opacity 0.3s ease-in-out;
+        }
+
+        .app {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(to bottom, #ff8c00, #ff4500);
+            border-radius: 15px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s ease-in-out;
+        }
+
+        .app:hover {
+            transform: scale(1.1);
+        }
+
+        #time {
+            font-size: 18px;
+        }
+
+        .home-button {
+            width: 60px;
+            height: 60px;
+            background: gray;
+            border-radius: 50%;
+            position: absolute;
+            bottom: 15px;
+            cursor: pointer;
+            transition: transform 0.2s ease-in-out;
+        }
+
+        .home-button:hover {
+            transform: scale(1.1);
+        }
+
+        .screen.off {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .iphone.off {
+            background: #111;
+        }
+
+        .charge-btn {
+            margin-top: 15px;
+            padding: 10px 20px;
+            font-size: 16px;
+            border: none;
+            background: #007bff;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.2s ease-in-out;
+        }
+
+        .charge-btn:hover {
+            background: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="iphone" id="iphone">
+        <div class="top-bar">
+            <div id="time"></div>
+            <div class="battery">
+                <span id="battery-percent">100%</span>
+                <div class="battery-icon">
+                    <div class="battery-level" id="battery-level"></div>
+                    <div class="battery-tip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="screen" id="screen">
+            <div class="app" onclick="window.location.href='https://google.com'">🌍</div>
+            <div class="app" onclick="window.location.href='camera.html'">📷</div>
+            <div class="app" onclick="window.location.href='settings.html'">⚙️</div>
+            <div class="app" onclick="window.location.href='https://play.google.com/'">📱</div>
+            <div class="app" onclick="window.location.href='https://youtube.com'">▶️</div>
+            
+
+           
+
+        </div>
+        <div class="home-button" onclick="togglePower()"></div>
+    </div>
+    <button class="charge-btn" onclick="chargeBattery()">🔌 Charge</button>
+
+    <script>
+        let isOn = true; 
+        let batteryLevel = 100; 
+        let isCharging = false;
+
+        function updateTime() {
+            document.getElementById("time").innerText = new Date().toLocaleTimeString();
+        }
+        setInterval(updateTime, 1000);
+        updateTime();
+
+        function togglePower() {
+            const iphone = document.getElementById("iphone");
+            const screen = document.getElementById("screen");
+            isOn = !isOn;
+            iphone.classList.toggle("off", !isOn);
+            screen.classList.toggle("off", !isOn);
+        }
+
+        function drainBattery() {
+            if (!isCharging && batteryLevel > 0) {
+                batteryLevel -= Math.floor(Math.random() * 5);
+                if (batteryLevel < 0) batteryLevel = 0;
+            }
+            updateBatteryUI();
+        }
+
+        function chargeBattery() {
+            isCharging = true;
+            const chargingInterval = setInterval(() => {
+                if (batteryLevel < 100) {
+                    batteryLevel += 5; 
+                    if (batteryLevel > 100) batteryLevel = 100;
+                } else {
+                    clearInterval(chargingInterval);
+                    isCharging = false;
+                }
+                updateBatteryUI();
+            }, 1000);
+        }
+
+        function updateBatteryUI() {
+            document.getElementById("battery-percent").innerText = batteryLevel + "%";
+            document.getElementById("battery-level").style.width = batteryLevel + "%";
+        }
+function openCandyCrash() {
+    window.open("file:///C:/Users/shahi/Desktop/Usairim%20Kamal%20(UWT)/Projects/Candy%20Crash%20By%20HTML%20CSS%20&%20JS/index.html", "_blank");
+}
+window.onload = function() {
+            console.log("Applying settings...");
+
+            const savedBgColor = localStorage.getItem("bgColor");
+            const savedBrightness = localStorage.getItem("brightness");
+
+            if (savedBgColor) {
+                document.getElementById("screen").style.backgroundColor = savedBgColor;
+                console.log("Background color applied:", savedBgColor);
+            }
+
+            if (savedBrightness) {
+                document.getElementById("screen").style.filter = `brightness(${savedBrightness}%)`;
+                console.log("Brightness applied:", savedBrightness);
+            }
+        };
+
+    </script>
+</body>
+</html>

@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Uwaimir</title>
+    <style>
+        html{
+   text-align: center;
+         }
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+         
+        }
+
+        #uwaimir {
+            padding: 10px;
+            background-color: #4CAF50;
+            color: white;
+            cursor: pointer;
+            display: inline-block;
+            border-radius: 5px;
+        }
+
+        #optionsMenu {
+            position: absolute;
+            background-color: white;
+            border: 1px solid #ccc;
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+            width: 150px;
+            display: none;
+            margin-top: 10px;
+        }
+
+        #optionsMenu ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        #optionsMenu li {
+            padding: 10px;
+            cursor: pointer;
+        }
+
+        #optionsMenu li:hover {
+            background-color: #f0f0f0;
+        }
+
+        /* Style for submenu */
+        .submenu {
+            display: none;
+            margin-left: 20px;
+        }
+
+        .submenu li {
+            padding: 8px;
+            cursor: pointer;
+        }
+        img{
+        weight: 120px;
+       height: 100px;
+ }
+    </style>
+</head>
+<body>
+    <div>
+       <img src="2.png">
+     </div>
+    <div id="uwaimir" onclick="showOptions()">Ramzan</div>
+
+    <div id="optionsMenu">
+        <ul>
+            <li onclick="call()">Call</li>
+            <li onclick="message()">Message</li>
+            <li onclick="rename()">Rename</li>
+        </ul>
+    </div>
+
+    <script>
+        function showOptions() {
+            var menu = document.getElementById("optionsMenu");
+            menu.style.display = (menu.style.display === "none" || menu.style.display === "") ? "block" : "none";
+        }
+
+        function call() {
+            window.location.href = "call2ramzan.html"; // Redirect to call page
+        }
+
+        function message() {
+            window.location.href = "chatramzan.html"; // Redirect to chat page
+        }
+
+        function rename() {
+            let newName = prompt("Enter new name for Ramzan:");
+            if (newName) {
+                document.getElementById("uwaimir").innerText = newName;
+            }
+        }
+    </script>
+
+</body>
+</html>

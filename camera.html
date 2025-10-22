@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phone Camera</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background: #222;
+            margin: 0;
+        }
+        .phone {
+            width: 300px;
+            height: 550px;
+            background: #111;
+            border-radius: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .screen {
+            width: 90%;
+            height: 80%;
+            background: #000;
+            border-radius: 15px;
+            position: absolute;
+            top: 10%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .hidden {
+            display: none;
+        }
+        video, canvas {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .buttons {
+            display: flex;
+            justify-content: space-around;
+            width: 100%;
+            position: absolute;
+            bottom: 10px;
+        }
+        button {
+            background: red;
+            border: none;
+            color: white;
+            padding: 10px;
+            margin: 5px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .power {
+            position: absolute;
+            top: 5px;
+            right: 10px;
+            background: gray;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="phone">
+        <div class="screen">
+            <video id="camera" autoplay></video>
+            <canvas id="canvas" class="hidden"></canvas>
+        </div>
+        <div class="buttons">
+            <button id="photo">📸</button>
+            <button id="video">🎥</button>
+            <button id="voice">🎙️</button>
+        </div>
+        <button class="power" id="power">🔴</button>
+    </div>
+
+    <script>
+        const camera = document.getElementById("camera");
+        const canvas = document.getElementById("canvas");
+        const photoBtn = document.getElementById("photo");
+        const videoBtn = document.getElementById("video");
+        const voiceBtn = document.getElementById("voice");
+        const powerBtn = document.getElementById("power");
+        const phone = document.querySelector(".phone");
+
+        let mediaStream;
+        let mediaRecorder;
+        let videoChunks = [];
+        let isRecordingVideo = false;
+
+        let audioRecorder;
+        let audioChunks = [];
+        let isRecordingAudio = false;
+
+        async function startCamera() {
+            mediaStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+            camera.srcObject = mediaStream;
+        }
+
+        photoBtn.addEventListener("click", () => {
+            const context = canvas.getContext("2d");
+            canvas.width = camera.videoWidth;
+            canvas.height = camera.videoHeight;
+            context.drawImage(camera, 0, 0, canvas.width, canvas.height);
+            
+            const link = document.createElement("a");
+            link.href = canvas.toDataURL("image/png");
+            link.download = "photo.png";
+            link.click();
+        });
+
+        videoBtn.addEventListener("click", () => {
+            if (!isRecordingVideo) {
+                mediaRecorder = new MediaRecorder(mediaStream);
+                mediaRecorder.start();
+                videoChunks = [];
+                mediaRecorder.ondataavailable = event => videoChunks.push(event.data);
+                mediaRecorder.onstop = () => {
+                    const videoBlob = new Blob(videoChunks, { type: "video/webm" });
+                    const videoUrl = URL.createObjectURL(videoBlob);
+                    
+                    const link = document.createElement("a");
+                    link.href = videoUrl;
+                    link.download = "video.webm";
+                    link.click();
+                };
+                videoBtn.style.background = "green";
+            } else {
+                mediaRecorder.stop();
+                videoBtn.style.background = "red";
+            }
+            isRecordingVideo = !isRecordingVideo;
+        });
+
+        voiceBtn.addEventListener("click", async () => {
+            if (!isRecordingAudio) {
+                const audioStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                audioRecorder = new MediaRecorder(audioStream);
+                audioRecorder.start();
+                audioChunks = [];
+                audioRecorder.ondataavailable = event => audioChunks.push(event.data);
+                audioRecorder.onstop = () => {
+                    const audioBlob = new Blob(audioChunks, { type: "audio/webm" });
+                    const audioUrl = URL.createObjectURL(audioBlob);
+                    
+                    const link = document.createElement("a");
+                    link.href = audioUrl;
+                    link.download = "audio.webm";
+                    link.click();
+                };
+                voiceBtn.style.background = "blue";
+            } else {
+                audioRecorder.stop();
+                voiceBtn.style.background = "red";
+            }
+            isRecordingAudio = !isRecordingAudio;
+        });
+
+        powerBtn.addEventListener("click", () => {
+            if (phone.classList.contains("hidden")) {
+                phone.classList.remove("hidden");
+                startCamera();
+                powerBtn.textContent = "🔴";
+            } else {
+                phone.classList.add("hidden");
+                if (mediaStream) {
+                    mediaStream.getTracks().forEach(track => track.stop());
+                }
+                powerBtn.textContent = "🟢";
+            }
+        });
+
+        startCamera();
+    </script>
+
+</body>
+</html>

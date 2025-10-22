@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        .container {
+            max-width: 400px;
+            margin: auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+        }
+        label {
+            font-weight: bold;
+            display: block;
+            margin-top: 10px;
+        }
+        select, input {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+        }
+        .save-btn {
+            background: #28a745;
+            color: white;
+            padding: 10px;
+            border: none;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 15px;
+        }
+        .save-btn:hover {
+            background: #218838;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>Settings</h2>
+        
+        <!-- Background Color Option -->
+        <label for="bgColor">Background Color:</label>
+        <select id="bgColor">
+            <option value="white">White</option>
+            <option value="lightgray">Light Gray</option>
+            <option value="black">Black</option>
+        </select>
+
+        <!-- Brightness Slider -->
+        <label for="brightness">Brightness:</label>
+        <input type="range" id="brightness" min="50" max="100" value="100">
+
+        <button class="save-btn" onclick="saveSettings()">Save Settings</button>
+    </div>
+
+    <script>
+        function saveSettings() {
+            const bgColor = document.getElementById("bgColor").value;
+            const brightness = document.getElementById("brightness").value;
+
+            // Store in localStorage
+            localStorage.setItem("bgColor", bgColor);
+            localStorage.setItem("brightness", brightness);
+
+            alert("Settings Saved! Now open the main phone UI.");
+        }
+
+        // Load previous settings when opening the settings page
+        window.onload = function() {
+            if (localStorage.getItem("bgColor")) {
+                document.getElementById("bgColor").value = localStorage.getItem("bgColor");
+            }
+            if (localStorage.getItem("brightness")) {
+                document.getElementById("brightness").value = localStorage.getItem("brightness");
+            }
+        };
+    </script>
+
+</body>
+</html>
