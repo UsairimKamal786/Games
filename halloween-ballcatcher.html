@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🎃 Pumpkin Catcher Game</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: linear-gradient(to bottom, #1a001f, #000);
+      overflow: hidden;
+      color: #fff;
+      font-family: "Poppins", sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
+
+    canvas {
+      border: 3px solid orange;
+      border-radius: 12px;
+      background: radial-gradient(circle at top, #2e003e, #000);
+    }
+
+    h1 {
+      margin-bottom: 10px;
+      text-shadow: 0 0 15px orange;
+      font-size: 2em;
+    }
+
+    #score {
+      margin-top: 8px;
+      font-size: 1.2em;
+      text-shadow: 0 0 10px #ff9900;
+    }
+  </style>
+</head>
+<body>
+  <h1>🎃 Pumpkin Catcher 🎃</h1>
+  <canvas id="gameCanvas" width="400" height="500"></canvas>
+  <div id="score">Score: 0</div>
+
+  <script>
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+
+    let basket = { x: 170, y: 450, width: 60, height: 20, speed: 8 };
+    let pumpkins = [];
+    let score = 0;
+
+    function drawBasket() {
+      ctx.fillStyle = "orange";
+      ctx.fillRect(basket.x, basket.y, basket.width, basket.height);
+    }
+
+    function drawPumpkin(p) {
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+      ctx.fillStyle = "orange";
+      ctx.fill();
+      ctx.strokeStyle = "#7a2a00";
+      ctx.stroke();
+    }
+
+    function createPumpkin() {
+      const x = Math.random() * (canvas.width - 20) + 10;
+      pumpkins.push({ x, y: 0, radius: 10, speed: 3 + Math.random() * 2 });
+    }
+
+    function updatePumpkins() {
+      for (let i = 0; i < pumpkins.length; i++) {
+        let p = pumpkins[i];
+        p.y += p.speed;
+
+        // Check catch
+        if (
+          p.y + p.radius >= basket.y &&
+          p.x > basket.x &&
+          p.x < basket.x + basket.width
+        ) {
+          pumpkins.splice(i, 1);
+          score++;
+          document.getElementById("score").textContent = "Score: " + score;
+        }
+
+        // Remove missed pumpkins
+        else if (p.y > canvas.height) {
+          pumpkins.splice(i, 1);
+        }
+      }
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      drawBasket();
+      pumpkins.forEach(drawPumpkin);
+      updatePumpkins();
+    }
+
+    function moveBasket(e) {
+      if (e.key === "ArrowLeft" && basket.x > 0) {
+        basket.x -= basket.speed;
+      } else if (e.key === "ArrowRight" && basket.x < canvas.width - basket.width) {
+        basket.x += basket.speed;
+      }
+    }
+
+    document.addEventListener("keydown", moveBasket);
+
+    setInterval(draw, 20);
+    setInterval(createPumpkin, 1000);
+  </script>
+</body>
+</html>
