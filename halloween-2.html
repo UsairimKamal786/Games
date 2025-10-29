@@ -1,0 +1,596 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Zombie Dodge</title>
+<link rel="preload" href="https://www.soundjay.com/human/scream-01.mp3" as="audio">
+<style>
+  :root{
+    --bg:#050005;
+    --panel:#0b0203;
+    --accent:#ff6b00;
+    --danger:#e22;
+    --muted:#9b8c8c;
+  }
+  html,body{height:100%;margin:0;font-family:Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;}
+  body{
+    background: radial-gradient(circle at 20% 10%, #15000a 0%, var(--bg) 30%, #000 100%);
+    color:#fff; display:flex; align-items:center; justify-content:center; padding:20px; box-sizing:border-box;
+  }
+
+  .wrap{
+    width:100%; max-width:980px; margin:auto;
+    display:grid; grid-template-columns: 1fr 340px; gap:18px;
+  }
+
+  @media (max-width:900px){
+    .wrap{grid-template-columns: 1fr; padding-bottom:60px;}
+  }
+
+  /* Game canvas panel */
+  .game-panel{
+    background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.15));
+    border-radius:14px; padding:14px; box-shadow: 0 10px 40px rgba(0,0,0,0.6), inset 0 0 30px rgba(255,80,0,0.02);
+  }
+
+  canvas{
+    display:block; width:100%; height:auto; border-radius:10px; background:#070004;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.7);
+    border: 2px solid rgba(255,80,0,0.06);
+  }
+
+  /* Sidebar / controls */
+  .side-panel{
+    background: linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.02));
+    border-radius:14px; padding:18px; box-sizing:border-box;
+    display:flex; flex-direction:column; gap:12px; min-height:420px;
+  }
+
+  h1{font-family:Creepster, "Segoe UI", sans-serif; margin:0 0 6px; font-size:20px; color:var(--accent); text-shadow:0 0 10px rgba(255,107,0,0.12); letter-spacing:0.5px}
+  p.muted{margin:0;font-size:13px;color:var(--muted)}
+
+  .stat-row{display:flex; gap:10px; align-items:center; justify-content:space-between;}
+  .stat{background:rgba(255,255,255,0.02); padding:10px 12px; border-radius:10px; min-width:120px; text-align:center;}
+  .stat b{display:block;font-size:20px;color:#fff}
+  .controls{display:flex; gap:10px; margin-top:6px;}
+  button.btn{
+    background:linear-gradient(180deg,var(--accent),#c14a00); border:none; color:#000; padding:10px 12px; border-radius:10px; cursor:pointer; font-weight:700;
+    box-shadow: 0 6px 14px rgba(170,60,0,0.25);
+  }
+  button.ghost{background:transparent; border:1px solid rgba(255,255,255,0.06); color:#fff}
+  button.small{padding:8px 10px; font-size:13px}
+
+  .footer{margin-top:auto; font-size:13px; color:var(--muted); display:flex; gap:6px; align-items:center; justify-content:space-between;}
+  .danger{color:var(--danger); font-weight:700}
+
+  /* overlay jumpscare */
+  #jumpscare {
+    position:fixed; inset:0; display:none; align-items:center; justify-content:center;
+    background:rgba(0,0,0,0.9); z-index:9999;
+    animation: flash 0.12s linear 0s 4;
+  }
+  #jumpscare img{width:90vw; max-width:920px; border-radius:6px; transform:scale(1.02); box-shadow:0 20px 60px rgba(0,0,0,0.8);}
+  @keyframes flash { 0%{filter:brightness(4)} 100%{filter:brightness(1)} }
+
+  /* mobile touch controls */
+  .touch-controls{display:none; position:fixed; bottom:16px; left:50%; transform:translateX(-50%); gap:10px; z-index:500;}
+  .touch-controls button{width:60px; height:60px; border-radius:50%; border:none; background:rgba(255,255,255,0.04); color:#fff; font-size:20px;}
+  @media (max-width:700px){ .touch-controls{display:flex} .wrap{padding-bottom:110px} .side-panel{display:none} }
+
+  /* small helpers */
+  .kbd{display:inline-block;background:#111;padding:4px 8px;border-radius:6px;border:1px solid rgba(255,255,255,0.03);font-size:12px;margin-left:6px}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <div class="game-panel">
+    <h1>Zombie Dodge — Pro</h1>
+    <p class="muted">Survive as long as you can. Use <span class="kbd">WASD</span> or <span class="kbd">arrow keys</span> to move. Touch controls on mobile.</p>
+
+    <canvas id="game" width="820" height="560"></canvas>
+    <div style="display:flex; gap:10px; margin-top:10px; align-items:center;">
+      <button class="btn" id="btnPause">Pause</button>
+      <button class="ghost small" id="btnRestart">Restart</button>
+      <div style="margin-left:auto; color:var(--muted); font-size:13px">Pro Edition • Scary Mode</div>
+    </div>
+  </div>
+
+  <div class="side-panel">
+    <h1>Scoreboard</h1>
+    <div class="stat-row">
+      <div class="stat">
+        <div style="font-size:12px;color:var(--muted)">Time survived</div>
+        <b id="scoreTime">0.0s</b>
+      </div>
+      <div class="stat">
+        <div style="font-size:12px;color:var(--muted)">Zombies</div>
+        <b id="zCount">0</b>
+      </div>
+    </div>
+
+    <div class="stat-row" style="margin-top:8px">
+      <div class="stat">
+        <div style="font-size:12px;color:var(--muted)">High score</div>
+        <b id="highScore">0.0s</b>
+      </div>
+      <div class="stat">
+        <div style="font-size:12px;color:var(--muted)">Kills</div>
+        <b id="kills">0</b>
+      </div>
+    </div>
+
+    <div style="margin-top:12px">
+      <p class="muted">Difficulty: increases every 12s — more zombies, faster chase.</p>
+      <div style="margin-top:6px" id="difficultyBar"></div>
+    </div>
+
+    <div style="margin-top:12px;">
+      <div style="display:flex; gap:8px;">
+        <button class="btn" id="btnSound">Sound: ON</button>
+        <button class="ghost" id="btnMute">Mute Jumpscare</button>
+      </div>
+    </div>
+
+    <div style="margin-top:18px">
+      <p class="muted">Controls</p>
+      <ul style="padding-left:18px; color:var(--muted); margin:6px 0;">
+        <li>Move: Arrow keys / WASD</li>
+        <li>Mobile: use on-screen buttons</li>
+        <li>Pause: space or Pause button</li>
+      </ul>
+    </div>
+
+    <div class="footer">
+      <div>Made by <b>Usairim</b> Web Tech</div>
+      <div class="danger">One jumpscare on catch</div>
+    </div>
+  </div>
+</div>
+
+<!-- jumpscare overlay -->
+<div id="jumpscare"><img src="https://th.bing.com/th/id/R.d31e42a1545df3520b78eddbb3c06686?rik=nMp6PCNk8oFMdA&pid=ImgRaw&r=0" alt="jumpscare image"></div>
+
+<!-- sounds -->
+<audio id="scream" src="jumpscare-94984.mp3" preload="auto"></audio>
+<audio id="bgm" src="https://www.soundjay.com/halloween/halloween-ambience-1.mp3" preload="auto" loop></audio>
+
+<!-- mobile touch controls -->
+<div class="touch-controls" id="touchControls" aria-hidden="true">
+  <button id="upBtn">?</button>
+  <button id="leftBtn">?</button>
+  <button id="downBtn">?</button>
+  <button id="rightBtn">?</button>
+</div>
+
+<script>
+/* ===========================
+   Zombie Dodge — Pro
+   Single-file game. No libs.
+   =========================== */
+
+const canvas = document.getElementById('game');
+const ctx = canvas.getContext('2d', { alpha: false });
+
+let W = canvas.width, H = canvas.height;
+function resizeCanvas(){
+  // maintain aspect but scale down on narrow screens
+  const rect = canvas.getBoundingClientRect();
+  W = canvas.width = Math.floor(rect.width);
+  H = canvas.height = Math.floor(rect.width * 560/820);
+  canvas.style.height = H + 'px';
+  // re-evaluate if narrow mobile -> small height
+}
+window.addEventListener('resize', () => { 
+  // allow CSS resizing but recalc game scale
+  const parentW = Math.min(820, document.querySelector('.game-panel').clientWidth - 28);
+  canvas.style.width = parentW + 'px';
+  resizeCanvas();
+});
+canvas.style.width = '100%';
+resizeCanvas();
+
+/* Game state */
+let running = true;
+let paused = false;
+let startTime = performance.now();
+let lastTick = performance.now();
+let elapsed = 0;
+let scoreTime = 0;
+let kills = 0;
+let highScore = parseFloat(localStorage.getItem('zombie_highscore') || '0') || 0;
+const scoreTimeEl = document.getElementById('scoreTime');
+const zCountEl = document.getElementById('zCount');
+const highScoreEl = document.getElementById('highScore');
+const killsEl = document.getElementById('kills');
+const difficultyBar = document.getElementById('difficultyBar');
+const btnPause = document.getElementById('btnPause');
+const btnRestart = document.getElementById('btnRestart');
+const btnSound = document.getElementById('btnSound');
+const btnMute = document.getElementById('btnMute');
+const scream = document.getElementById('scream');
+const bgm = document.getElementById('bgm');
+const jumpscare = document.getElementById('jumpscare');
+
+/* Audio defaults */
+let soundOn = true;
+let jumpscareMuted = false;
+let bgmPlaying = false;
+btnSound.textContent = 'Sound: ON';
+btnMute.textContent = 'Mute Jumpscare';
+
+/* Entities */
+const player = {
+  x: 120, y: 120, r: 12,
+  speed: 240, vx:0, vy:0,
+  color: '#fff',
+  alive: true
+};
+
+const zombies = [];
+let zombieBaseSpeed = 45; // pixels/sec
+let zombieSpawnTimer = 0;
+let spawnInterval = 2500; // ms
+let difficultyTick = 0;
+
+/* utility */
+function rand(min,max){ return Math.random()*(max-min)+min; }
+function clamp(v,min,max){ return Math.max(min, Math.min(max, v)); }
+
+/* create initial canvas background pattern (moon + tombstones) */
+function drawBackground(ctx,w,h){
+  // subtle vignette
+  const grad = ctx.createRadialGradient(w*0.2,h*0.1,80,w*0.5,h*0.5, Math.max(w,h));
+  grad.addColorStop(0,'rgba(60,10,20,0.12)');
+  grad.addColorStop(0.6,'rgba(0,0,0,0.9)');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0,0,w,h);
+
+  // moon
+  ctx.beginPath();
+  ctx.fillStyle = 'rgba(230,220,200,0.12)';
+  ctx.arc(w - 120, 90, 48, 0, Math.PI*2);
+  ctx.fill();
+
+  // ground fog
+  const fog = ctx.createLinearGradient(0,h*0.6,0,h);
+  fog.addColorStop(0,'rgba(40,5,10,0.14)');
+  fog.addColorStop(1,'rgba(0,0,0,0.95)');
+  ctx.fillStyle = fog;
+  ctx.fillRect(0,h*0.6,w,h*0.4);
+
+  // tombstones (simple)
+  for(let i=0;i<8;i++){
+    const tx = 40 + i*(w-80)/7 + rand(-20,20);
+    const ty = h*0.75 + rand(-10,20);
+    ctx.fillStyle = 'rgba(90,90,90,0.14)';
+    ctx.fillRect(tx, ty-24, 28, 34);
+    ctx.fillStyle = 'rgba(0,0,0,0.2)';
+    ctx.fillRect(tx+4, ty-18, 20, 20);
+  }
+}
+
+/* spawn a zombie at random border targeting player */
+function spawnZombie(){
+  const side = Math.floor(rand(0,4)); // 0 top,1 right,2 bottom,3 left
+  let x,y;
+  if(side===0){ x = rand(20, W-20); y = -20; }
+  if(side===1){ x = W+20; y = rand(20, H-20); }
+  if(side===2){ x = rand(20, W-20); y = H+20; }
+  if(side===3){ x = -20; y = rand(20, H-20); }
+  const z = {
+    x, y,
+    r: rand(14, 22),
+    speed: zombieBaseSpeed * rand(0.88, 1.15),
+    color: '#b5d6d6',
+    rot: 0
+  };
+  zombies.push(z);
+}
+
+/* AI: simple steering to player */
+function updateZombies(dt){
+  for(const z of zombies){
+    const dx = player.x - z.x;
+    const dy = player.y - z.y;
+    const dist = Math.hypot(dx,dy) || 1;
+    const nx = dx / dist;
+    const ny = dy / dist;
+    // chase with speed; also small random wobble
+    z.x += (nx * z.speed + Math.sin(performance.now()*0.001 + z.x)*6) * dt;
+    z.y += (ny * z.speed + Math.cos(performance.now()*0.001 + z.y)*6) * dt;
+    z.rot = Math.atan2(ny, nx);
+  }
+}
+
+/* collision */
+function checkCollisions(){
+  for(const z of zombies){
+    const d = Math.hypot(player.x - z.x, player.y - z.y);
+    if(d < z.r + player.r - 2){
+      player.alive = false;
+      triggerJumpscare();
+      break;
+    }
+  }
+}
+
+/* draw player and zombies */
+function render(){
+  // background
+  ctx.clearRect(0,0,W,H);
+  drawBackground(ctx,W,H);
+
+  // subtle overlay flicker
+  ctx.fillStyle = 'rgba(20,0,0,0.04)';
+  ctx.fillRect(0,0,W,H);
+
+  // draw zombies behind player
+  for(const z of zombies){
+    drawZombie(z);
+  }
+
+  // player (glow)
+  ctx.save();
+  ctx.beginPath();
+  ctx.shadowBlur = 18;
+  ctx.shadowColor = '#ff6b00';
+  ctx.fillStyle = '#fff';
+  ctx.arc(player.x, player.y, player.r, 0, Math.PI*2);
+  ctx.fill();
+  ctx.restore();
+
+  // HUD text on canvas (small)
+  ctx.fillStyle = 'rgba(255,255,255,0.06)';
+  ctx.fillRect(8,8,170,46);
+}
+
+/* draw a single zombie with eyes */
+function drawZombie(z){
+  ctx.save();
+  ctx.translate(z.x, z.y);
+  ctx.rotate(z.rot);
+  // body
+  ctx.beginPath();
+  ctx.fillStyle = '#2b2b2b';
+  ctx.ellipse(0,0, z.r+6, z.r+10, 0, 0, Math.PI*2);
+  ctx.fill();
+
+  // face plate
+  ctx.beginPath();
+  ctx.fillStyle = '#6b6b6b';
+  ctx.ellipse(-2,-4, z.r-2, z.r-4, 0, 0, Math.PI*2);
+  ctx.fill();
+
+  // eyes
+  ctx.fillStyle = '#fff';
+  ctx.fillRect(-z.r/2 + 2, -z.r - 1, 6, 8);
+  ctx.fillRect( z.r/2 - 8, -z.r - 1, 6, 8);
+  ctx.fillStyle = '#111';
+  ctx.fillRect(-z.r/2 + 4, -z.r + 1, 3, 3);
+  ctx.fillRect( z.r/2 - 6, -z.r + 1, 3, 3);
+
+  // mouth (stitches)
+  ctx.strokeStyle = '#1e1e1e';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(-6, z.r/2 - 2);
+  ctx.lineTo(6, z.r/2 - 2);
+  ctx.stroke();
+  ctx.restore();
+}
+
+/* player input */
+const keys = {};
+window.addEventListener('keydown', (e) => {
+  keys[e.key.toLowerCase()] = true;
+  if(e.key === ' '){ togglePause(); e.preventDefault(); }
+});
+window.addEventListener('keyup', (e) => { keys[e.key.toLowerCase()] = false; });
+
+/* mobile touch buttons */
+['upBtn','downBtn','leftBtn','rightBtn'].forEach(id=>{
+  const el = document.getElementById(id);
+  if(!el) return;
+  el.addEventListener('touchstart', (ev) => {
+    ev.preventDefault();
+    if(id==='upBtn') keys['arrowup']=true;
+    if(id==='downBtn') keys['arrowdown']=true;
+    if(id==='leftBtn') keys['arrowleft']=true;
+    if(id==='rightBtn') keys['arrowright']=true;
+  }, {passive:false});
+  el.addEventListener('touchend', (ev) => {
+    ev.preventDefault();
+    if(id==='upBtn') keys['arrowup']=false;
+    if(id==='downBtn') keys['arrowdown']=false;
+    if(id==='leftBtn') keys['arrowleft']=false;
+    if(id==='rightBtn') keys['arrowright']=false;
+  }, {passive:false});
+});
+
+/* update loop */
+function update(dt){
+  if(!player.alive || paused) return;
+
+  // move player (normalized)
+  let mvx = 0, mvy = 0;
+  if(keys['arrowup']||keys['w']) mvy -= 1;
+  if(keys['arrowdown']||keys['s']) mvy += 1;
+  if(keys['arrowleft']||keys['a']) mvx -= 1;
+  if(keys['arrowright']||keys['d']) mvx += 1;
+  const mag = Math.hypot(mvx,mvy) || 1;
+  player.x += (mvx/mag) * player.speed * dt;
+  player.y += (mvy/mag) * player.speed * dt;
+  // clamp inside canvas
+  player.x = clamp(player.x, 16, W-16);
+  player.y = clamp(player.y, 16, H-16);
+
+  // spawn logic
+  zombieSpawnTimer += dt*1000;
+  if(zombieSpawnTimer > spawnInterval){
+    zombieSpawnTimer = 0;
+    spawnZombie();
+  }
+
+  // difficulty ramp every 12s
+  difficultyTick += dt;
+  if(difficultyTick > 12){
+    difficultyTick = 0;
+    zombieBaseSpeed *= 1.12;
+    spawnInterval = Math.max(650, spawnInterval * 0.88); // cap spawn fast
+    // spawn a couple to increase pressure
+    spawnZombie(); spawnZombie();
+  }
+
+  updateZombies(dt);
+  checkCollisions();
+
+  // stats
+  elapsed = (performance.now() - startTime)/1000;
+  scoreTime = elapsed;
+  scoreTimeEl.textContent = scoreTime.toFixed(1) + 's';
+  zCountEl.textContent = zombies.length;
+  killsEl.textContent = kills;
+  highScoreEl.textContent = (highScore || 0).toFixed(1)+'s';
+  // difficulty bar visual
+  difficultyBar.innerHTML = `<div style="height:10px;background:linear-gradient(90deg,#111,#3a0);border-radius:6px;width:${Math.min(100, (zombies.length/12)*100)}%"></div>`;
+}
+
+/* game draw and loop */
+function loop(now){
+  if(!lastTick) lastTick = now;
+  const dt = (now - lastTick)/1000;
+  lastTick = now;
+  if(!paused && player.alive){
+    update(dt);
+    render();
+  } else {
+    // still render paused overlay
+    render();
+    if(paused){
+      ctx.save();
+      ctx.fillStyle = 'rgba(0,0,0,0.5)';
+      ctx.fillRect(0,0,W,H);
+      ctx.fillStyle = '#fff';
+      ctx.font = '26px Inter';
+      ctx.fillText('PAUSED', W*0.5 - 46, H*0.5);
+      ctx.restore();
+    }
+  }
+  if(running) requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
+
+/* jumpscare */
+let jumpscareTriggered = false;
+function triggerJumpscare(){
+  if(jumpscareTriggered) return;
+  jumpscareTriggered = true;
+  paused = true;
+  // show overlay
+  jumpscare.style.display = 'flex';
+  if(soundOn && !jumpscareMuted){
+    try{ scream.currentTime = 0; scream.play(); }catch(e){}
+  }
+  // stop bgm
+  try{ bgm.pause(); bgm.currentTime = 0; bgmPlaying = false; }catch(e){}
+  // update high score
+  if(scoreTime > highScore){ highScore = scoreTime; localStorage.setItem('zombie_highscore', highScore.toFixed(2)); }
+  highScoreEl.textContent = highScore.toFixed(1)+'s';
+  // after short delay remove overlay and present restart
+  setTimeout(()=> {
+    jumpscare.style.display = 'none';
+    // show a modal-like big text on canvas
+    ctx.save();
+    ctx.fillStyle = 'rgba(0,0,0,0.6)';
+    ctx.fillRect(0,0,W,H);
+    ctx.fillStyle = 'white';
+    ctx.font = '30px Inter';
+    ctx.fillText('YOU GOT CAUGHT! ??', W*0.5 - 140, H*0.5 - 8);
+    ctx.font = '18px Inter';
+    ctx.fillText('Press Restart to try again', W*0.5 - 120, H*0.5 + 22);
+    ctx.restore();
+    btnRestart.style.display = 'inline-block';
+  }, 1200);
+}
+
+/* restart */
+function restartGame(){
+  // reset state
+  zombies.length = 0;
+  player.x = W/3; player.y = H/2;
+  player.alive = true;
+  zombieBaseSpeed = 45;
+  spawnInterval = 2500;
+  zombieSpawnTimer = 0;
+  difficultyTick = 0;
+  jumpscareTriggered = false;
+  startTime = performance.now();
+  lastTick = performance.now();
+  scoreTime = 0;
+  kills = 0;
+  btnRestart.style.display = 'none';
+  paused = false;
+  // resume bgm if allowed
+  if(soundOn && !bgmPlaying){
+    try{ bgm.play(); bgmPlaying = true; }catch(e){}
+  }
+}
+
+/* UI bindings */
+btnPause.addEventListener('click', () => togglePause());
+btnRestart.addEventListener('click', () => { restartGame(); });
+
+btnSound.addEventListener('click', () => {
+  soundOn = !soundOn;
+  if(soundOn){ btnSound.textContent = 'Sound: ON'; if(!bgmPlaying){ try{ bgm.play(); bgmPlaying = true; }catch(e){} } }
+  else { btnSound.textContent = 'Sound: OFF'; try{ bgm.pause(); bgmPlaying = false; }catch(e){} }
+});
+
+btnMute.addEventListener('click', ()=>{
+  jumpscareMuted = !jumpscareMuted;
+  btnMute.textContent = jumpscareMuted ? 'Jumpscare: MUTED' : 'Mute Jumpscare';
+});
+
+/* keyboard pause toggle */
+function togglePause(){
+  if(!player.alive) return;
+  paused = !paused;
+  btnPause.textContent = paused ? 'Resume' : 'Pause';
+  if(!paused && soundOn && !bgmPlaying){ try{ bgm.play(); bgmPlaying = true; }catch(e){} }
+  if(paused){ try{ bgm.pause(); bgmPlaying = false; }catch(e){} }
+}
+window.addEventListener('keydown', (e) => {
+  if(e.key === ' '){ e.preventDefault(); togglePause(); }
+});
+
+/* autoplay bgm attempt for user gesture */
+document.addEventListener('click', function one(){ 
+  if(soundOn && !bgmPlaying){ try{ bgm.volume = 0.5; bgm.play(); bgmPlaying = true; }catch(e){} }
+  document.removeEventListener('click', one);
+});
+
+/* initial spawns */
+for(let i=0;i<2;i++) spawnZombie();
+startTime = performance.now();
+
+/* small performance note: on low devices we reduce spawn */
+setInterval(()=>{
+  // trim zombies if too many (safety)
+  if(zombies.length > 40) zombies.splice(40);
+}, 3000);
+
+/* optional: clicking canvas teleports (for testing) */
+// canvas.addEventListener('dblclick', (e) => { player.x = e.offsetX; player.y = e.offsetY; });
+
+/* small responsive adjustments at start */
+(function initResize(){
+  const parentW = Math.min(820, document.querySelector('.game-panel').clientWidth - 28);
+  canvas.style.width = parentW + 'px';
+  resizeCanvas();
+})();
+
+</script>
+</body>
+</html>
