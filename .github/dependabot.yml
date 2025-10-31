@@ -1,0 +1,12 @@
+# Dependabot configuration file
+# For more info: https://docs.github.com/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file
+
+version: 2
+updates:
+  - package-ecosystem: "npm"      # Replace with your package ecosystem: npm, pip, composer, github-actions, etc.
+    directory: "/"                # Location of your package manifests (package.json for npm, requirements.txt for pip)
+    schedule:
+      interval: "weekly"          # Check for updates weekly (can also be "daily" or "monthly")
+    open-pull-requests-limit: 5   # Optional: limit the number of open PRs created by Dependabot
+    commit-message:
+      prefix: "chore"             # Optional: prefix for commit messages in the update PRs
