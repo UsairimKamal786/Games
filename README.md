@@ -26,27 +26,7 @@ I use a mix of web technologies to bring games to life:
 
 ---
 
-## 📂 Game Projects
-/
 
-├── index.html # Homepage / Game Hub
-
-├── games/ # Folder for all game projects
-
-│ ├── space-adventure/ # Space-themed game
-
-│ ├── arcade-challenges/
-
-│ └── halloween-special/
-
-├── assets/ # Images, sounds, CSS, JS
-
-├── README.md # This file
-
-└── SECURITY.md # Security Policy
-
-
----
 
 ## 🎯 How to Play / Contribute
 1. Visit the [Games section](https://usairimkamal786.github.io/Website%20Link.html)  
