@@ -27,3 +27,38 @@ I use a mix of web technologies to bring games to life:
 ---
 
 ## 📂 Game Projects
+/
+├── index.html # Homepage / Game Hub
+├── games/ # Folder for all game projects
+│ ├── space-adventure/ # Space-themed game
+│ ├── arcade-challenges/
+│ └── halloween-special/
+├── assets/ # Images, sounds, CSS, JS
+├── README.md # This file
+└── SECURITY.md # Security Policy
+
+
+---
+
+## 🎯 How to Play / Contribute
+1. Visit the [Games section](https://usairimkamal786.github.io/Website%20Link.html)  
+2. Click a game and enjoy!  
+3. Fork the repo if you want to **add your own game**, tweak existing ones, or improve features  
+4. Submit a Pull Request and your game could appear on the site!  
+
+> Reminder: Keep it fun and safe — no malicious code, please.  
+
+---
+
+## 📧 Contact
+For questions, feedback, or reporting issues:  
+**Email:** usairimkamal2016@gmail.com  
+
+---
+
+## ⚡ License
+All games and code are **open-source** for learning and sharing responsibly.  
+
+---
+
+**Let the games begin! 🕹️**
