@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ping Pong Game</title>
+  <style>
+    body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background-color: #111;
+      color: white;
+    }
+
+    canvas {
+      border: 2px solid white;
+      background-color: #222;
+      display: block;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Ping Pong Game</h1>
+  <canvas id="gameCanvas" width="600" height="400"></canvas>
+
+  <script>
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+
+    const paddleWidth = 100;
+    const paddleHeight = 10;
+    let paddleX = (canvas.width - paddleWidth) / 2;
+
+    const ballRadius = 8;
+    let x = canvas.width / 2;
+    let y = canvas.height - 30;
+    let dx = 3;
+    let dy = -3;
+
+    let rightPressed = false;
+    let leftPressed = false;
+    let score = 0;
+
+    document.addEventListener("keydown", keyDownHandler);
+    document.addEventListener("keyup", keyUpHandler);
+
+    function keyDownHandler(e) {
+      if(e.key === "Right" || e.key === "ArrowRight") rightPressed = true;
+      else if(e.key === "Left" || e.key === "ArrowLeft") leftPressed = true;
+    }
+
+    function keyUpHandler(e) {
+      if(e.key === "Right" || e.key === "ArrowRight") rightPressed = false;
+      else if(e.key === "Left" || e.key === "ArrowLeft") leftPressed = false;
+    }
+
+    function drawPaddle() {
+      ctx.fillStyle = "#fff";
+      ctx.fillRect(paddleX, canvas.height - paddleHeight - 10, paddleWidth, paddleHeight);
+    }
+
+    function drawBall() {
+      ctx.beginPath();
+      ctx.arc(x, y, ballRadius, 0, Math.PI*2);
+      ctx.fillStyle = "#f00";
+      ctx.fill();
+      ctx.closePath();
+    }
+
+    function drawScore() {
+      ctx.font = "16px Arial";
+      ctx.fillStyle = "#fff";
+      ctx.fillText("Score: " + score, 8, 20);
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      drawBall();
+      drawPaddle();
+      drawScore();
+
+      if(x + dx > canvas.width - ballRadius || x + dx < ballRadius) dx = -dx;
+      if(y + dy < ballRadius) dy = -dy;
+      else if(y + dy > canvas.height - ballRadius - paddleHeight - 10) {
+        if(x > paddleX && x < paddleX + paddleWidth) {
+          dy = -dy;
+          score++;
+        } else {
+          alert("GAME OVER! Your score: " + score);
+          document.location.reload();
+        }
+      }
+
+      if(rightPressed && paddleX < canvas.width - paddleWidth) paddleX += 7;
+      if(leftPressed && paddleX > 0) paddleX -= 7;
+
+      x += dx;
+      y += dy;
+      requestAnimationFrame(draw);
+    }
+
+    draw();
+  </script>
+</body>
+</html>
