@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Endless Snow Catch ❄️</title>
+<style>
+  body {
+    margin: 0;
+    overflow: hidden;
+    background: linear-gradient(to bottom, #87ceeb, #ffffff);
+    height: 100vh;
+    font-family: 'Arial', sans-serif;
+  }
+
+  #score {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    color: #0b3d91;
+    font-size: 22px;
+    font-weight: bold;
+  }
+
+  #message {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 36px;
+    color: #b30000;
+    display: none;
+  }
+
+  canvas {
+    display: block;
+  }
+</style>
+</head>
+<body>
+
+<div id="score">Score: 0</div>
+<canvas id="gameCanvas"></canvas>
+
+<script>
+const canvas = document.getElementById("gameCanvas");
+const ctx = canvas.getContext("2d");
+
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+// Basket setup
+const basket = {
+  x: canvas.width / 2 - 40,
+  y: canvas.height - 100,
+  width: 80,
+  height: 30,
+  color: "#5a3e2b",
+  speed: 15
+};
+
+// Snowflake setup
+const snowflakes = [];
+const maxSnowflakes = 6;
+let score = 0;
+
+// Controls
+let keys = {};
+window.addEventListener("keydown", e => keys[e.key] = true);
+window.addEventListener("keyup", e => keys[e.key] = false);
+
+// Create snowflake
+function createSnowflake() {
+  return {
+    x: Math.random() * canvas.width,
+    y: -10,
+    size: 15 + Math.random() * 10,
+    speed: 2 + Math.random() * 3
+  };
+}
+
+// Game update loop
+function update() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // Draw basket
+  ctx.fillStyle = basket.color;
+  ctx.fillRect(basket.x, basket.y, basket.width, basket.height);
+
+  // Move basket
+  if (keys["ArrowLeft"] && basket.x > 0) basket.x -= basket.speed;
+  if (keys["ArrowRight"] && basket.x + basket.width < canvas.width) basket.x += basket.speed;
+
+  // Add new snowflakes
+  if (snowflakes.length < maxSnowflakes) snowflakes.push(createSnowflake());
+
+  // Draw and move snowflakes
+  for (let i = 0; i < snowflakes.length; i++) {
+    const s = snowflakes[i];
+    ctx.beginPath();
+    ctx.arc(s.x, s.y, s.size / 2, 0, Math.PI * 2);
+    ctx.fillStyle = "white";
+    ctx.fill();
+    s.y += s.speed;
+
+    // Catching snowflakes
+    if (s.y + s.size > basket.y &&
+        s.x > basket.x &&
+        s.x < basket.x + basket.width) {
+      snowflakes.splice(i, 1);
+      score++;
+      document.getElementById("score").textContent = "Score: " + score;
+    }
+
+    // If missed, just reset snowflake position (no game over)
+    if (s.y > canvas.height) {
+      snowflakes[i] = createSnowflake();
+    }
+  }
+
+  requestAnimationFrame(update);
+}
+
+update();
+</script>
+
+</body>
+</html>
