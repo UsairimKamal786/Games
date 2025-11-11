@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Car Racer — Green Car</title>
+<style>
+  body {
+    margin: 0;
+    background: #111;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+  }
+  canvas {
+    background: #555;
+    border-radius: 10px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+  }
+  .hud {
+    position: fixed;
+    top: 10px;
+    left: 10px;
+    color: white;
+    font-family: sans-serif;
+    background: rgba(0,0,0,0.3);
+    padding: 6px 12px;
+    border-radius: 6px;
+  }
+</style>
+</head>
+<body>
+<canvas id="game" width="480" height="720"></canvas>
+<div class="hud">Score: <span id="score">0</span></div>
+
+<script>
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
+const W = canvas.width, H = canvas.height;
+
+let player = {x: W/2 - 25, y: H - 120, w: 50, h: 100, lane: 1};
+let enemies = [];
+let score = 0;
+let running = true;
+let tick = 0;
+const lanes = [W/4 - 25, W/2 - 25, 3*W/4 - 25];
+const scoreEl = document.getElementById("score");
+
+document.addEventListener("keydown", e => {
+  if (e.key === "ArrowLeft" && player.lane > 0) player.lane--;
+  if (e.key === "ArrowRight" && player.lane < 2) player.lane++;
+  if (e.key === " ") running = !running; // space to pause
+});
+
+function spawnEnemy() {
+  const lane = Math.floor(Math.random() * 3);
+  enemies.push({x: lanes[lane], y: -120, w: 50, h: 100});
+}
+
+function update() {
+  if (!running) return;
+  tick++;
+  if (tick % 80 === 0) spawnEnemy();
+  player.x = lanes[player.lane];
+  for (let e of enemies) e.y += 5;
+  enemies = enemies.filter(e => e.y < H + 100);
+  for (let e of enemies) {
+    if (
+      e.x < player.x + player.w &&
+      e.x + e.w > player.x &&
+      e.y < player.y + player.h &&
+      e.y + e.h > player.y
+    ) {
+      running = false;
+      alert("Crash! Final Score: " + score);
+    }
+  }
+  if (tick % 20 === 0) score++;
+  scoreEl.textContent = score;
+}
+
+function draw() {
+  ctx.fillStyle = "#333";
+  ctx.fillRect(0, 0, W, H);
+  ctx.strokeStyle = "#fff";
+  ctx.setLineDash([40, 40]);
+  ctx.lineWidth = 6;
+  ctx.beginPath();
+  ctx.moveTo(W / 3, 0);
+  ctx.lineTo(W / 3, H);
+  ctx.moveTo((2 * W) / 3, 0);
+  ctx.lineTo((2 * W) / 3, H);
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  // Player car - green
+  ctx.fillStyle = "limegreen";
+  ctx.fillRect(player.x, player.y, player.w, player.h);
+
+  // Enemy cars - red
+  ctx.fillStyle = "red";
+  for (let e of enemies) ctx.fillRect(e.x, e.y, e.w, e.h);
+}
+
+function loop() {
+  update();
+  draw();
+  requestAnimationFrame(loop);
+}
+loop();
+</script>
+</body>
+</html>
