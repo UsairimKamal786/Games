@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Endless Winter — Catch the Gifts!</title>
+  <style>
+    :root{ --bg:#f6fbff; --ice:#cfeaff; --accent:#2b6cff }
+    html,body{height:100%;margin:0;font-family:Inter,system-ui,Arial;background:linear-gradient(180deg,var(--bg) 0%, #eaf6ff 60%);}
+    .wrap{display:grid;height:100%;place-items:center;padding:18px}
+    canvas{background:transparent;border-radius:14px;box-shadow:0 8px 30px rgba(9,30,66,.08);}
+    .hud{position:fixed;left:18px;top:18px;background:rgba(255,255,255,.8);backdrop-filter:blur(4px);padding:8px 12px;border-radius:10px;box-shadow:0 6px 18px rgba(11,22,44,.06);}
+    .hud b{display:inline-block;width:70px}
+    .footer{position:fixed;right:18px;top:18px;background:rgba(255,255,255,.8);padding:8px 12px;border-radius:10px;font-size:13px}
+    .big{font-weight:700;color:var(--accent)}
+    .centerMessage{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none}
+    .panel{pointer-events:auto;background:linear-gradient(180deg,#fff,#f4fbff);padding:18px;border-radius:12px;box-shadow:0 12px 40px rgba(9,30,66,.08);text-align:center}
+    button{background:var(--accent);color:white;border:0;padding:10px 14px;border-radius:8px;font-weight:600;cursor:pointer}
+    small{display:block;margin-top:8px;color:#334155}
+    @media (max-width:600px){canvas{width:92vw;height:56vw}}</style>
+</head>
+<body>
+  <div class="wrap">
+    <canvas id="game" width="800" height="560"></canvas>
+  </div>
+
+  <div class="hud"> <div><b>Score:</b> <span id="score">0</span></div></div>
+  <div class="footer"> <div><span class="big" id="lives">❤❤❤</span></div></div>
+
+  <div class="centerMessage" id="overlay">
+    <div class="panel" id="panel">
+      <h2 style="margin:0 0 6px">Endless Winter — Catch the Gifts!</h2>
+      <p style="margin:0 0 12px">Move with ← → or A / D. Catch the green gifts (+10). Avoid icy stones (-1 life). Press Space to pause.</p>
+      <div style="display:flex;gap:8px;justify-content:center">
+        <button id="startBtn">Start Game</button>
+        <button id="howBtn" style="background:#64748b">How to Play</button>
+      </div>
+      <small>Made with HTML • CSS • JS — have fun!</small>
+    </div>
+  </div>
+
+  <script>
+  (()=>{
+    const canvas = document.getElementById('game');
+    const ctx = canvas.getContext('2d');
+    const W = canvas.width, H = canvas.height;
+
+    // game state
+    let player = {x: W/2 - 28, y: H - 64, w: 56, h: 28, speed: 6};
+    let items = []; // falling objects
+    let tick = 0, score = 0, lives = 3, running = false, paused = false, spawnRate = 40;
+
+    const scoreEl = document.getElementById('score');
+    const livesEl = document.getElementById('lives');
+    const overlay = document.getElementById('overlay');
+    const panel = document.getElementById('panel');
+
+    // handle input
+    const keys = {};
+    addEventListener('keydown', e=>{ keys[e.key.toLowerCase()] = true; if(e.key===' '){ paused = !paused; } });
+    addEventListener('keyup', e=>{ keys[e.key.toLowerCase()] = false; });
+
+    function spawn(){
+      // type: 'gift' or 'rock'
+      const t = Math.random() < 0.7 ? 'gift' : 'rock';
+      const size = t==='gift' ? rand(22,36) : rand(20,36);
+      items.push({x: rand(24, W-24-size), y:-size, vy: rand(1.6,3.2)+(score/200), size, type:t, rot: Math.random()*Math.PI});
+    }
+
+    function rand(a,b){ return Math.random()*(b-a)+a }
+
+    function update(){
+      if(!running || paused) return;
+      tick++;
+      // spawn frequency increases slowly
+      if(tick % Math.max(12, spawnRate - Math.floor(score/40)) === 0) spawn();
+
+      // move player
+      if(keys['arrowleft'] || keys['a']) player.x -= player.speed;
+      if(keys['arrowright'] || keys['d']) player.x += player.speed;
+      player.x = Math.max(8, Math.min(W - player.w - 8, player.x));
+
+      // update items
+      for(let i=items.length-1;i>=0;i--){
+        const it = items[i];
+        it.y += it.vy;
+        it.rot += 0.03*(it.vy);
+        if(it.y > H + 80){ items.splice(i,1); continue }
+
+        // collision
+        if(it.y + it.size > player.y && it.y < player.y + player.h && it.x + it.size > player.x && it.x < player.x + player.w){
+          if(it.type === 'gift'){
+            score += 10;
+          } else {
+            lives -= 1;
+          }
+          items.splice(i,1);
+        }
+      }
+
+      // update HUD
+      scoreEl.textContent = score;
+      livesEl.textContent = '❤'.repeat(Math.max(0,lives));
+
+      if(lives <= 0){ gameOver(); }
+    }
+
+    function draw(){
+      // clear
+      ctx.clearRect(0,0,W,H);
+
+      // background snow hills
+      ctx.fillStyle = '#f0fbff';
+      ctx.beginPath(); ctx.ellipse(W*0.25,H+60,420,140,0,0,Math.PI*2); ctx.fill();
+      ctx.beginPath(); ctx.ellipse(W*0.75,H+40,420,120,0,0,Math.PI*2); ctx.fill();
+
+      // falling items
+      for(const it of items){
+        ctx.save();
+        ctx.translate(it.x + it.size/2, it.y + it.size/2);
+        ctx.rotate(it.rot);
+        if(it.type === 'gift') drawGift(-it.size/2, -it.size/2, it.size);
+        else drawRock(-it.size/2, -it.size/2, it.size);
+        ctx.restore();
+      }
+
+      // player (sled)
+      drawPlayer();
+
+      // top-left mini score (small shimmer)
+      ctx.fillStyle = 'rgba(255,255,255,0.02)'; ctx.fillRect(0,0,W,40);
+    }
+
+    function drawGift(x,y,s){
+      // box
+      ctx.fillStyle = '#16a34a';
+      roundRect(ctx,x,y,s,s,6,true,false);
+      // ribbon
+      ctx.fillStyle = '#fff';
+      ctx.fillRect(x + s*0.42, y+4, s*0.16, s-8);
+      ctx.fillRect(x+4, y + s*0.42, s-8, s*0.16);
+      // sparkle
+      if(Math.random()<0.08){ ctx.fillStyle='rgba(255,255,255,0.55)'; ctx.fillRect(x+2,y+2,2,2) }
+    }
+
+    function drawRock(x,y,s){
+      ctx.fillStyle = '#94a3b8';
+      ctx.beginPath(); ctx.ellipse(x + s/2, y + s/2, s*0.55, s*0.43, 0, 0, Math.PI*2); ctx.fill();
+      ctx.fillStyle='rgba(0,0,0,0.06)'; ctx.fillRect(x + s*0.1, y + s*0.5, s*0.2, s*0.08);
+    }
+
+    function drawPlayer(){
+      // sled shadow
+      ctx.fillStyle = 'rgba(17,24,39,0.05)'; ctx.fillRect(player.x+6, player.y+player.h+6, player.w-12, 10);
+      // body (simple rectangle)
+      ctx.fillStyle = '#1e293b'; ctx.fillRect(player.x, player.y, player.w, player.h);
+      // trim
+      ctx.fillStyle = '#f8fafc'; ctx.fillRect(player.x+8, player.y+4, player.w-16, player.h-8);
+      // runners
+      ctx.strokeStyle = '#0ea5e9'; ctx.lineWidth = 4; ctx.beginPath(); ctx.moveTo(player.x-6, player.y+player.h+6); ctx.lineTo(player.x+player.w+6, player.y+player.h+6); ctx.stroke();
+    }
+
+    function gameLoop(){ update(); draw(); requestAnimationFrame(gameLoop); }
+
+    function start(){
+      // reset
+      items = []; tick = 0; score = 0; lives = 3; running = true; paused = false; spawnRate = 40;
+      overlay.style.display='none';
+    }
+
+    function gameOver(){
+      running = false; paused = false; overlay.style.display='flex';
+      panel.innerHTML = `\n        <h2 style="margin:0 0 6px">Game Over</h2>\n        <p style="margin:0 0 12px">Score: <strong>${score}</strong></p>\n        <div style=\"display:flex;gap:8px;justify-content:center\">\n          <button id=\"restart\">Play Again</button>\n          <button id=\"menu\" style=\"background:#64748b\">Main Menu</button>\n        </div>\n        <small style=\"display:block;margin-top:8px;color:#334155\">Tip: catching gifts increases spawn speed — stay sharp!</small>\n      `;
+      document.getElementById('restart').onclick = ()=>{ start(); };
+      document.getElementById('menu').onclick = ()=>{ showMenu(); };
+    }
+
+    function showMenu(){
+      running = false; paused = false; overlay.style.display='flex';
+      panel.innerHTML = `\n        <h2 style=\"margin:0 0 6px\">Endless Winter — Catch the Gifts!</h2>\n        <p style=\"margin:0 0 12px\">Move with ← → or A / D. Catch the green gifts (+10). Avoid icy stones (-1 life). Press Space to pause.</p>\n        <div style=\"display:flex;gap:8px;justify-content:center\">\n          <button id=\"startBtn2\">Start Game</button>\n          <button id=\"howBtn2\" style=\"background:#64748b\">How to Play</button>\n        </div>\n        <small>Made with HTML • CSS • JS — have fun!</small>\n      `;
+      document.getElementById('startBtn2').onclick = ()=> start();
+      document.getElementById('howBtn2').onclick = ()=> showHow();
+    }
+
+    function showHow(){
+      overlay.style.display='flex';
+      panel.innerHTML = `\n        <h3 style=\"margin:0 0 6px\">How to Play</h3>\n        <ol style=\"text-align:left;margin:6px 0 12px;padding-left:18px\">\n          <li>Move left/right with arrow keys or A / D.</li>\n          <li>Catch green gifts to earn +10 points each.</li>\n          <li>Avoid grey icy rocks — they cost 1 life.</li>\n          <li>Game speeds up the higher your score.</li>\n        </ol>\n        <div style=\"display:flex;gap:8px;justify-content:center\">\n          <button id=\"back\">Back</button>\n        </div>\n      `;
+      document.getElementById('back').onclick = ()=> showMenu();
+    }
+
+    // util: rounded rect
+    function roundRect(ctx,x,y,w,h,r,fill,stroke){ if(typeof r==='undefined') r=6; ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); if(fill)ctx.fill(); if(stroke)ctx.stroke(); }
+
+    // start/menu buttons
+    document.getElementById('startBtn').onclick = ()=> start();
+    document.getElementById('howBtn').onclick = ()=> showHow();
+
+    // main loop
+    requestAnimationFrame(gameLoop);
+
+    // small helper to keep canvas crisp on various displays
+    function resizeCanvas(){
+      const ratio = window.devicePixelRatio || 1;
+      canvas.width = W * ratio; canvas.height = H * ratio; canvas.style.width = W+'px'; canvas.style.height = H+'px'; ctx.setTransform(ratio,0,0,ratio,0,0);
+    }
+    resizeCanvas(); addEventListener('resize', resizeCanvas);
+
+  })();
+  </script>
+</body>
+</html>
