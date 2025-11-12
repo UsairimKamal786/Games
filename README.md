@@ -9,8 +9,7 @@ This site is my personal gaming playground, where I create and share **web-based
 
 - Classic and arcade-style games  
 - Space-themed coding experiments  
-- Interactive challenges to test your skills  
-- New games added every Halloween and special events! 🎃  
+- Interactive challenges to test your skills   
 
 > Step in, play, and see what I’ve been coding!  
 
