@@ -1,0 +1,141 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Catch The Falling Leafs Game</title>
+<style>
+  body{margin:0;font-family:sans-serif;background:linear-gradient(#FFFBF0,#FFE5B4);}
+  canvas{display:block;margin:0 auto;background:#a0522d70;border-radius:12px;}
+  .hud{width:800px;margin:10px auto;display:flex;justify-content:space-between;color:#333;font-weight:bold;}
+  button{margin:0 5px;padding:6px 12px;border:none;border-radius:6px;background:#FF8C00;color:#fff;cursor:pointer;}
+</style>
+</head>
+<body>
+<div class="hud">
+  <div>Score: <span id="score">0</span></div>
+  <div>Level: <span id="level">1</span></div>
+  <div>Lives: <span id="lives">3</span></div>
+  <div>
+    <button id="startBtn">Start</button>
+    <button id="pauseBtn">Pause</button>
+  </div>
+</div>
+<canvas id="gameCanvas" width="800" height="500"></canvas>
+<script>
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+let W = canvas.width;
+let H = canvas.height;
+
+// HUD elements
+const scoreEl = document.getElementById('score');
+const levelEl = document.getElementById('level');
+const livesEl = document.getElementById('lives');
+const startBtn = document.getElementById('startBtn');
+const pauseBtn = document.getElementById('pauseBtn');
+
+// Game state
+let score = 0, level = 1, lives = 3;
+let running = false, paused = false;
+let crazyMode = false;
+
+// Player
+const player = { x: W/2 - 50, y: H - 50, w: 100, h: 30, speed: 8 };
+let keys = { left: false, right: false };
+
+// Falling items
+const items = [];
+const itemTypes = ['leaf','apple','pumpkin','acorn','bad'];
+
+function rand(min,max){return Math.random()*(max-min)+min;}
+
+// Input
+window.addEventListener('keydown', e=>{ if(e.key==='ArrowLeft') keys.left=true; if(e.key==='ArrowRight') keys.right=true; });
+window.addEventListener('keyup', e=>{ if(e.key==='ArrowLeft') keys.left=false; if(e.key==='ArrowRight') keys.right=false; });
+canvas.addEventListener('mousemove', e=>{ const rect=canvas.getBoundingClientRect(); player.x = e.clientX - rect.left - player.w/2; });
+
+// Item factory
+function spawnItem(){
+  const type = Math.random()<0.05?'bad':itemTypes[Math.floor(Math.random()*4)];
+  items.push({
+    x: rand(20,W-20), y:-20, size:rand(20,40), speed: rand(1.5,3)+level*0.3, type
+  });
+}
+
+// Game loop
+let frame=0;
+function update(){
+  if(!running || paused) return;
+  frame++;
+  if(keys.left) player.x -= player.speed;
+  if(keys.right) player.x += player.speed;
+  player.x = Math.max(0, Math.min(W-player.w, player.x));
+
+  if(frame%50===0) spawnItem();
+
+  for(let i=items.length-1;i>=0;i--){
+    const it = items[i];
+    it.y += it.speed * (crazyMode ? 1.5 : 1);
+    // check catch
+    if(it.y+it.size>player.y && it.y<player.y+player.h && it.x+it.size>player.x && it.x<player.x+player.w){
+      if(it.type==='bad') lives--;
+      else if(it.type==='leaf') score+=5;
+      else score+=10;
+      items.splice(i,1);
+      continue;
+    }
+    if(it.y>H) items.splice(i,1);
+  }
+
+  // level up
+  const newLevel = Math.floor(score/100)+1;
+  if(newLevel>level){
+    level=newLevel;
+    if(level>=10 && !crazyMode){
+      crazyMode=true;
+      setTimeout(()=>{alert('Game is Gonna Crazy!');},100);
+    }
+  }
+
+  // Update HUD
+  scoreEl.textContent=score; levelEl.textContent=level; livesEl.textContent=lives;
+
+  if(lives<=0) endGame();
+}
+
+function draw(){
+  // background
+  ctx.fillStyle=crazyMode ? 'black' : '#a0522d70';
+  ctx.fillRect(0,0,W,H);
+
+  // draw player basket
+  ctx.fillStyle='#8B4513'; ctx.fillRect(player.x,player.y,player.w,player.h);
+  // draw items
+  for(const it of items){
+    if(it.type==='leaf') ctx.fillStyle='green';
+    else if(it.type==='apple') ctx.fillStyle='red';
+    else if(it.type==='pumpkin') ctx.fillStyle='orange';
+    else if(it.type==='acorn') ctx.fillStyle='brown';
+    else ctx.fillStyle='black';
+    ctx.beginPath(); ctx.arc(it.x,it.y,it.size/2,0,Math.PI*2); ctx.fill();
+  }
+
+  if(running) requestAnimationFrame(gameLoop);
+}
+
+function gameLoop(){ update(); draw(); }
+
+function startGame(){
+  score=0; level=1; lives=3; items.length=0; running=true; paused=false; crazyMode=false;
+  gameLoop();
+}
+function pauseGame(){ paused = !paused; if(!paused) gameLoop(); }
+function endGame(){ running=false; paused=false; alert('Game Over! Score: '+score); }
+
+startBtn.addEventListener('click',startGame);
+pauseBtn.addEventListener('click',pauseGame);
+</script>
+</body>
+</html>
