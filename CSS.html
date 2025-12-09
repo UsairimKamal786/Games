@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Christmas Sleigh Slide - Vertical</title>
+<style>
+  body {
+    margin: 0;
+    background: #001033;
+    font-family: sans-serif;
+    overflow: hidden;
+    text-align: center;
+    color: white;
+  }
+
+  #menu {
+    position: absolute;
+    top: 100px;
+    width: 100%;
+  }
+
+  button {
+    font-size: 24px;
+    padding: 15px 30px;
+    margin: 20px;
+    cursor: pointer;
+    border-radius: 10px;
+    border: none;
+    background-color: #ff0000;
+    color: white;
+  }
+
+  canvas {
+    display: block;
+    margin: 20px auto;
+    background: linear-gradient(to bottom, #001033, #87CEEB);
+    border: 5px solid #000;
+  }
+</style>
+</head>
+<body>
+
+<div id="menu">
+  <h1>?? Christmas Sleigh Slide ??</h1>
+  <button id="playBtn">Play</button>
+  <button id="howBtn">How to Play</button>
+  <div id="instructions" style="display:none; font-size:20px; margin-top:20px;">
+    Use Arrow Keys to move Santa's sleigh.<br>
+    Dodge falling obstacles like chimneys and candy-canes.<br>
+    Fly through special zones for bonus points.<br>
+    Survive as long as possible to increase score!
+  </div>
+</div>
+
+<canvas id="gameCanvas" width="500" height="800" style="display:none;"></canvas>
+
+<script>
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+const menu = document.getElementById('menu');
+const instructions = document.getElementById('instructions');
+
+let score = 0;
+let frame = 0;
+let gameRunning = false;
+
+// Player (Santa's sleigh)
+const sleigh = { x: canvas.width/2 - 40, y: canvas.height - 80, w: 80, h: 40, speed: 10 };
+
+// Obstacles & Zones
+let obstacles = [];
+let zones = [];
+
+// Snowflakes background
+const snowflakes = [];
+for(let i=0;i<100;i++){
+  snowflakes.push({x: Math.random()*canvas.width, y: Math.random()*canvas.height, size: 2+Math.random()*3, speed: 1+Math.random()*2});
+}
+
+// Key state
+const keys = {};
+document.addEventListener('keydown', e => keys[e.key] = true);
+document.addEventListener('keyup', e => keys[e.key] = false);
+
+// Menu buttons
+document.getElementById('playBtn').onclick = () => {
+  menu.style.display = 'none';
+  canvas.style.display = 'block';
+  gameRunning = true;
+  loop();
+};
+
+document.getElementById('howBtn').onclick = () => {
+  instructions.style.display = instructions.style.display === 'none' ? 'block' : 'none';
+};
+
+// Spawn obstacles and zones
+function spawn() {
+  if(frame % 90 === 0) {
+    const w = 40 + Math.random()*40;
+    obstacles.push({ x: Math.random()*(canvas.width - w), y: -50, w: w, h: 30, speed: 4 + Math.random()*3 });
+  }
+  if(frame % 250 === 0) {
+    zones.push({ x: Math.random()*(canvas.width-60), y: -60, w: 60, h: 60, speed: 3, type: 'boost' });
+  }
+}
+
+// Update game state
+function update() {
+  frame++;
+  spawn();
+
+  // Move player
+  if(keys['ArrowLeft'] && sleigh.x > 0) sleigh.x -= sleigh.speed;
+  if(keys['ArrowRight'] && sleigh.x < canvas.width - sleigh.w) sleigh.x += sleigh.speed;
+  if(keys['ArrowUp'] && sleigh.y > 0) sleigh.y -= sleigh.speed;
+  if(keys['ArrowDown'] && sleigh.y < canvas.height - sleigh.h) sleigh.y += sleigh.speed;
+
+  // Move obstacles
+  obstacles.forEach((o,i)=>{
+    o.y += o.speed;
+    if(o.y > canvas.height) { obstacles.splice(i,1); score++; }
+
+    // collision
+    if(sleigh.x < o.x + o.w && sleigh.x + sleigh.w > o.x &&
+       sleigh.y < o.y + o.h && sleigh.y + sleigh.h > o.y) {
+         alert('Game Over! Score: '+score);
+         location.reload();
+    }
+  });
+
+  // Move zones
+  zones.forEach((z,i)=>{
+    z.y += z.speed;
+    if(z.y > canvas.height) zones.splice(i,1);
+
+    if(sleigh.x < z.x + z.w && sleigh.x + sleigh.w > z.x &&
+       sleigh.y < z.y + z.h && sleigh.y + sleigh.h > z.y) {
+        // boost effect
+        sleigh.speed = 20;
+        setTimeout(()=> sleigh.speed = 10, 1000);
+        zones.splice(i,1);
+        score += 5;
+    }
+  });
+
+  // Snowflakes
+  snowflakes.forEach(s=>{
+    s.y += s.speed;
+    if(s.y > canvas.height) s.y = 0;
+  });
+}
+
+// Draw everything
+function draw() {
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+
+  // Snowflakes
+  ctx.fillStyle = 'white';
+  snowflakes.forEach(s=>{
+    ctx.beginPath();
+    ctx.arc(s.x, s.y, s.size, 0, Math.PI*2);
+    ctx.fill();
+  });
+
+  // Player
+  ctx.fillStyle = 'red';
+  ctx.fillRect(sleigh.x, sleigh.y, sleigh.w, sleigh.h);
+
+  // Obstacles
+  ctx.fillStyle = 'brown';
+  obstacles.forEach(o => ctx.fillRect(o.x, o.y, o.w, o.h));
+
+  // Zones
+  ctx.fillStyle = 'cyan';
+  zones.forEach(z => ctx.fillRect(z.x, z.y, z.w, z.h));
+
+  // Score
+  ctx.fillStyle = 'white';
+  ctx.font = '24px sans-serif';
+  ctx.fillText('Score: ' + score, 10, 30);
+}
+
+// Game loop
+function loop() {
+  if(!gameRunning) return;
+  update();
+  draw();
+  requestAnimationFrame(loop);
+}
+</script>
+
+</body>
+</html>
