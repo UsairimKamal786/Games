@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Tap the Warm Tiles</title>
+<style>
+  body{margin:0;background:#0b1220;color:#fff;font-family:system-ui}
+  header{padding:12px;text-align:center;background:#141d35}
+  canvas{display:block;margin:0 auto;background:linear-gradient(#1d2a52,#0b1220)}
+  footer{text-align:center;font-size:12px;opacity:.85;padding:8px}
+</style>
+</head>
+<body>
+<header>
+  <strong>🔥 Tap the Warm Tiles</strong><br>
+  Easy, endless, and actually interactive
+</header>
+<canvas id="cv" width="720" height="420"></canvas>
+<footer>
+  Tap or click the glowing tiles before they fade. Simple fun, no stress.
+</footer>
+<script>
+const c=document.getElementById('cv');
+const g=c.getContext('2d');
+
+const cols=6, rows=4, size=100;
+let tiles=[], score=0, speed=120;
+
+function newTile(){
+  const x=Math.floor(Math.random()*cols);
+  const y=Math.floor(Math.random()*rows);
+  tiles.push({x,y,t:100});
+}
+
+c.addEventListener('click',e=>{
+  const r=c.getBoundingClientRect();
+  const mx=Math.floor((e.clientX-r.left)/size);
+  const my=Math.floor((e.clientY-r.top)/size);
+  tiles=tiles.filter(t=>{
+    if(t.x===mx && t.y===my){ score++; return false; }
+    return true;
+  });
+});
+
+function update(){
+  if(Math.random()<0.02) newTile();
+  tiles.forEach(t=>t.t--);
+  tiles=tiles.filter(t=>t.t>0);
+  if(score>0 && score%10===0) speed=Math.max(40,speed-1);
+}
+
+function draw(){
+  g.clearRect(0,0,c.width,c.height);
+  for(let y=0;y<rows;y++)for(let x=0;x<cols;x++){
+    g.strokeStyle='#2e3c7a';
+    g.strokeRect(x*size,y*size,size,size);
+  }
+  tiles.forEach(t=>{
+    g.fillStyle=`rgba(255,200,80,${t.t/100})`;
+    g.fillRect(t.x*size+10,t.y*size+10,size-20,size-20);
+  });
+  g.fillStyle='#fff';
+  g.fillText(`Score: ${score}`,10,c.height-10);
+}
+
+function loop(){ update(); draw(); requestAnimationFrame(loop); }
+loop();
+</script>
+</body>
+</html>
