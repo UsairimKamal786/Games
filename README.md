@@ -21,7 +21,7 @@ I use a mix of web technologies to bring games to life:
 - **CSS3** for style, animation, and effects  
 - **JavaScript** for game logic and interactivity  
 - **GitHub Pages** to host games online  
-- Optional: frameworks or libraries like **p5.js** or **Phaser**  
+
 
 ---
 
