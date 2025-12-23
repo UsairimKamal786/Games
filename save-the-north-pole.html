@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Save the North Pole 🎄</title>
+  <style>
+    body {
+      background: #081a33;
+      color: white;
+      font-family: Arial;
+      text-align: center;
+    }
+    #game {
+      width: 700px;
+      height: 400px;
+      background: #123;
+      margin: auto;
+      position: relative;
+      border: 4px solid white;
+      overflow: hidden;
+    }
+    #player {
+      position: absolute;
+      font-size: 30px;
+      left: 330px;
+      top: 180px;
+    }
+    .wolf, .light {
+      position: absolute;
+      font-size: 28px;
+    }
+  </style>
+</head>
+<body>
+
+<h1>🎄 Save the North Pole 🎄</h1>
+<p>Lights: <span id="score">0</span> / 50</p>
+
+<div id="game">
+  <div id="player">🧑‍🎄</div>
+</div>
+
+<h2 id="msg"></h2>
+
+<script>
+  const game = document.getElementById("game");
+  const player = document.getElementById("player");
+  const scoreText = document.getElementById("score");
+  const msg = document.getElementById("msg");
+
+  let score = 0;
+  let px = 330, py = 180;
+
+  document.addEventListener("keydown", e => {
+    if (e.key === "w") py -= 10;
+    if (e.key === "s") py += 10;
+    if (e.key === "a") px -= 10;
+    if (e.key === "d") px += 10;
+
+    px = Math.max(0, Math.min(660, px));
+    py = Math.max(0, Math.min(360, py));
+
+    player.style.left = px + "px";
+    player.style.top = py + "px";
+  });
+
+  function spawnWolf() {
+    const wolf = document.createElement("div");
+    wolf.className = "wolf";
+    wolf.innerHTML = "🐺";
+    wolf.style.left = Math.random() * 660 + "px";
+    wolf.style.top = Math.random() * 360 + "px";
+    game.appendChild(wolf);
+
+    const move = setInterval(() => {
+      let wx = wolf.offsetLeft;
+      let wy = wolf.offsetTop;
+
+      wx += wx < px ? 1 : -1;
+      wy += wy < py ? 1 : -1;
+
+      wolf.style.left = wx + "px";
+      wolf.style.top = wy + "px";
+
+      if (Math.abs(wx - px) < 20 && Math.abs(wy - py) < 20) {
+        wolf.remove();
+        clearInterval(move);
+        spawnLight();
+      }
+    }, 20);
+  }
+
+  function spawnLight() {
+    const light = document.createElement("div");
+    light.className = "light";
+    light.innerHTML = "💡";
+    light.style.left = Math.random() * 660 + "px";
+    light.style.top = Math.random() * 360 + "px";
+    game.appendChild(light);
+
+    const check = setInterval(() => {
+      if (
+        Math.abs(light.offsetLeft - px) < 20 &&
+        Math.abs(light.offsetTop - py) < 20
+      ) {
+        score++;
+        scoreText.textContent = score;
+        light.remove();
+        clearInterval(check);
+
+        if (score >= 50) {
+          msg.innerHTML = "🎅 NORTH POLE SAVED FOREVER 🎄❄️";
+          clearInterval(wolfLoop);
+        }
+      }
+    }, 50);
+  }
+
+  const wolfLoop = setInterval(spawnWolf, 1200);
+</script>
+
+</body>
+</html>
