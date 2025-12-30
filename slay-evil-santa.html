@@ -57,8 +57,11 @@ function shoot(fromX,fromY,targetX,targetY,speed,owner){
   bullets.push({x:fromX,y:fromY,vx:Math.cos(a)*speed,vy:Math.sin(a)*speed,own:owner});
 }
 
+// Game active flag
+let gameActive = true;
+
 function update(){
-  if(!player.alive) return;
+  if(!gameActive) return;
 
   // Move
   if(keys.ArrowLeft) player.x -= player.sp;
@@ -80,8 +83,11 @@ function update(){
   // Turrets attack
   turrets.forEach(t=>{
     if(!t.alive) return;
-    t.cd++;
-    if(t.cd>60){ t.cd=0; shoot(t.x+15,t.y+15,player.x,player.y,4,"turret"); }
+    t.cd++; 
+    if(t.cd>60){ 
+      t.cd=0; 
+      shoot(t.x+15,t.y+15,player.x,player.y,4,"turret"); 
+    }
     // Sword hit turrets
     if(player.atk && t.x<player.x+player.w+50 && t.x+t.w>player.x && t.y<player.y+player.h && t.y+t.h>player.y){
       t.alive=false; turretCount--;
@@ -100,10 +106,22 @@ function update(){
     if(b.x<0||b.x>canvas.width||b.y<0||b.y>canvas.height) b.dead=1;
     if(!b.dead && b.x>player.x && b.x<player.x+player.w && b.y>player.y && b.y<player.y+player.h){
       player.hp -= (b.own=="santa"?10:6); b.dead=1;
-      if(player.hp<=0){ player.alive=false; msg.textContent="GAME OVER"; msg.style.display="block"; }
+      if(player.hp<=0){ 
+        player.alive=false; 
+        gameActive = false;
+        msg.textContent="GAME OVER - Christmas Failed"; 
+        msg.style.display="block"; 
+      }
     }
   });
   bullets = bullets.filter(b=>!b.dead);
+
+  // Check Santa death
+  if(!santa.alive && gameActive){
+    gameActive = false;
+    msg.textContent="CHRISTMAS SAVED!";
+    msg.style.display="block";
+  }
 }
 
 function draw(){
