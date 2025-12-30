@@ -5,170 +5,137 @@
 <title>Slay the Night Before Christmas</title>
 <style>
 body{margin:0;background:black;overflow:hidden;font-family:Poppins,sans-serif;color:white;text-align:center}
-#menu{
-  position:absolute;top:0;left:0;width:100%;height:100%;
-  background:linear-gradient(#0a0f24,#1a1f3a);
-  display:flex;flex-direction:column;justify-content:center;align-items:center;gap:20px;
-}
-button{
-  padding:12px 28px;font-size:22px;border:none;border-radius:12px;cursor:pointer;font-weight:700;
-}
-#how,#final{display:none;font-size:24px;max-width:600px;line-height:1.6}
-canvas{display:none;background:linear-gradient(#0a0f24,#1a1f3a)}
-#ui{position:absolute;top:10px;left:10px;font-size:20px;display:none}
-#msg{position:absolute;top:35%;width:100%;font-size:50px;font-weight:700;display:none;text-shadow:0 0 20px red;color:red}
+#ui{position:absolute;top:10px;left:10px;font-size:20px;display:block;}
+#msg{position:absolute;top:35%;width:100%;font-size:50px;font-weight:700;display:none;text-shadow:0 0 20px red;color:red;}
+canvas{display:block;}
 </style>
 </head>
 <body>
 
-<div id="menu">
-  <h1 style="font-size:60px;text-shadow:0 0 30px cyan">SLAY EVIL SANTA</h1>
-
-  <button onclick="show('how')">How to Play</button>
-  <button onclick="show('final')">Final Combat</button>
-
-  <div id="how">
-    ⚔️ Arrow Keys → Move<br>
-    Space → Sword Slash<br>
-    Turrets shoot from all sides<br>
-    Slice them by pressing Space near them<br>
-    Kill Santa to save Christmas<br><br>
-    <button onclick="back()">Back</button>
-  </div>
-
-  <div id="final">
-    Press START to begin the battle<br><br>
-    <button onclick="startGame()">START</button>
-  </div>
-</div>
-
-<div id="ui">❤️ HP: <span id="hp">100</span> | 🎅 Santa HP: <span id="shp">200</span> | 🛡 Turrets: <span id="tc">0</span></div>
-<div id="msg">SANTA SLAIN.<br>CHRISTMAS SAVED.</div>
+<div id="ui">❤️ HP: <span id="hp">210</span> | 🎅 Santa HP: <span id="shp">200</span> | 🛡 Turrets: <span id="tc">0</span></div>
+<div id="msg"></div>
 <canvas id="game"></canvas>
 
 <script>
-function show(id){
-  how.style.display="none";
-  final.style.display="none";
-  document.getElementById(id).style.display="block";
-}
-function back(){ how.style.display="none"; final.style.display="none"; }
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
 
-const c=document.getElementById("game"),ctx=c.getContext("2d");
-c.width=innerWidth; c.height=innerHeight;
-let keys={};
-onkeydown=e=>keys[e.code]=1;
-onkeyup=e=>keys[e.code]=0;
+let keys = {};
+window.addEventListener("keydown", e => keys[e.code]=true);
+window.addEventListener("keyup", e => keys[e.code]=false);
 
-let p={x:80,y:c.height-140,w:40,h:60,hp:100,sp:6,atk:0,t:0};
-let s={x:c.width-200,y:c.height-140,w:80,h:80,hp:200,alive:1};
+// Player
+let player = {x:80,y:canvas.height-140,w:40,h:60,hp:210,sp:6,atk:0,t:0,alive:true};
 
-let turrets=[], turretTimer=0, turretCount=0;
-const SLASH_TIME=15;
-let bullets=[];
+// Santa
+let santa = {x:canvas.width-200,y:canvas.height-140,w:80,h:80,hp:200,alive:true};
 
+// Turrets
+let turrets = [];
+let turretCount = 0;
+
+// Bullets
+let bullets = [];
+const SLASH_TIME = 15;
+
+// Spawn 5 turrets at start
 function spawnTurrets(){
   for(let i=0;i<5;i++){
-    turrets.push({x:Math.random()*(c.width-100)+50,y:Math.random()*(c.height-200)+50,w:30,h:30,alive:1,cd:0});
+    turrets.push({x:Math.random()*(canvas.width-100)+50,
+                  y:Math.random()*(canvas.height-200)+50,
+                  w:30,h:30,alive:true,cd:0});
   }
-  turretCount=5;
+  turretCount = 5;
 }
+spawnTurrets();
 
+// Shoot bullets
 function shoot(fromX,fromY,targetX,targetY,speed,owner){
-  let a=Math.atan2(targetY-fromY,targetX-fromX);
+  let a = Math.atan2(targetY-fromY,targetX-fromX);
   bullets.push({x:fromX,y:fromY,vx:Math.cos(a)*speed,vy:Math.sin(a)*speed,own:owner});
 }
 
-function upd(){
-  if(!s.alive) return;
+function update(){
+  if(!player.alive) return;
 
-  if(keys.ArrowLeft) p.x-=p.sp;
-  if(keys.ArrowRight) p.x+=p.sp;
-  if(keys.ArrowUp) p.y-=p.sp;
-  if(keys.ArrowDown) p.y+=p.sp;
-  p.x=Math.max(0,Math.min(c.width-p.w,p.x));
-  p.y=Math.max(0,Math.min(c.height-p.h,p.y));
+  // Move
+  if(keys.ArrowLeft) player.x -= player.sp;
+  if(keys.ArrowRight) player.x += player.sp;
+  if(keys.ArrowUp) player.y -= player.sp;
+  if(keys.ArrowDown) player.y += player.sp;
+  player.x = Math.max(0,Math.min(canvas.width-player.w,player.x));
+  player.y = Math.max(0,Math.min(canvas.height-player.h,player.y));
 
-  if(keys.Space && !p.atk){ p.atk=1; p.t=SLASH_TIME; }
-  if(p.atk){ p.t--; if(p.t<=0) p.atk=0; }
+  // Sword attack
+  if(keys.Space && !player.atk){player.atk=1;player.t=SLASH_TIME;}
+  if(player.atk){player.t--; if(player.t<=0) player.atk=0;}
 
-  if(s.alive && Math.random()<0.01){ shoot(s.x+20,s.y+40,p.x,p.y,5,"santa"); }
-
-  for(let t of turrets){
-    if(!t.alive) continue;
-    t.cd++; if(t.cd>60){t.cd=0; shoot(t.x+15,t.y+15,p.x,p.y,4,"turret");}
-    if(p.atk && t.x<p.x+p.w+50 && t.x+t.w>p.x && t.y<p.y+p.h && t.y+t.h>p.y){ t.alive=0; turretCount--; }
+  // Santa attack
+  if(santa.alive && Math.random()<0.01){
+    shoot(santa.x+20,santa.y+40,player.x,player.y,5,"santa");
   }
 
-  if(p.atk && s.x<p.x+p.w+60 && s.x+s.w>p.x && s.y<p.y+p.h && s.y+s.h>p.y){ s.hp-=12; }
+  // Turrets attack
+  turrets.forEach(t=>{
+    if(!t.alive) return;
+    t.cd++;
+    if(t.cd>60){ t.cd=0; shoot(t.x+15,t.y+15,player.x,player.y,4,"turret"); }
+    // Sword hit turrets
+    if(player.atk && t.x<player.x+player.w+50 && t.x+t.w>player.x && t.y<player.y+player.h && t.y+t.h>player.y){
+      t.alive=false; turretCount--;
+    }
+  });
 
-  for(let b of bullets){
-    b.x+=b.vx; b.y+=b.vy;
-    if(b.x<0||b.x>c.width||b.y<0||b.y>c.height) b.dead=1;
-    if(!b.dead && b.x<p.x+p.w && b.x>p.x && b.y<p.y+p.h && b.y>p.y){ p.hp -= (b.own=="santa"?10:6); b.dead=1; }
+  // Sword hits Santa
+  if(player.atk && santa.alive && santa.x<player.x+player.w+60 && santa.x+santa.w>player.x && santa.y<player.y+player.h && santa.y+santa.h>player.y){
+    santa.hp -=12;
+    if(santa.hp<=0) santa.alive=false;
   }
-  bullets=bullets.filter(b=>!b.dead);
 
-  if(s.hp<=0){ s.alive=0; msg.style.display="block"; }
+  // Bullets
+  bullets.forEach(b=>{
+    b.x += b.vx; b.y += b.vy;
+    if(b.x<0||b.x>canvas.width||b.y<0||b.y>canvas.height) b.dead=1;
+    if(!b.dead && b.x>player.x && b.x<player.x+player.w && b.y>player.y && b.y<player.y+player.h){
+      player.hp -= (b.own=="santa"?10:6); b.dead=1;
+      if(player.hp<=0){ player.alive=false; msg.textContent="GAME OVER"; msg.style.display="block"; }
+    }
+  });
+  bullets = bullets.filter(b=>!b.dead);
 }
 
-function drw(){
-  ctx.clearRect(0,0,c.width,c.height);
-  ctx.fillStyle="#4cc9ff"; ctx.fillRect(p.x,p.y,p.w,p.h);
-  if(p.atk){ ctx.fillStyle="white"; ctx.fillRect(p.x+p.w,p.y+20,50,8); }
-  if(s.alive){ ctx.fillStyle="red"; ctx.fillRect(s.x,s.y,s.w,s.h); }
-  ctx.fillStyle="#ff9f1c"; for(let t of turrets){ if(t.alive) ctx.fillRect(t.x,t.y,t.w,t.h); }
-  ctx.fillStyle="white"; for(let b of bullets) ctx.fillRect(b.x,b.y,6,6);
+function draw(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
 
-  hp.textContent=Math.floor(p.hp);
-  shp.textContent=Math.max(0,Math.floor(s.hp));
-  tc.textContent=Math.max(0,turretCount);
-  requestAnimationFrame(drw);
+  // Player
+  ctx.fillStyle="#4cc9ff";
+  if(player.alive) ctx.fillRect(player.x,player.y,player.w,player.h);
+
+  // Sword
+  if(player.atk) ctx.fillStyle="white", ctx.fillRect(player.x+player.w,player.y+20,50,8);
+
+  // Santa
+  if(santa.alive) ctx.fillStyle="red", ctx.fillRect(santa.x,santa.y,santa.w,santa.h);
+
+  // Turrets
+  ctx.fillStyle="#ff9f1c";
+  turrets.forEach(t=>{if(t.alive) ctx.fillRect(t.x,t.y,t.w,t.h);});
+
+  // Bullets
+  ctx.fillStyle="white";
+  bullets.forEach(b=>ctx.fillRect(b.x,b.y,6,6));
+
+  document.getElementById("hp").textContent = Math.max(0,Math.floor(player.hp));
+  document.getElementById("shp").textContent = Math.max(0,Math.floor(santa.hp));
+  document.getElementById("tc").textContent = Math.max(0,turretCount);
+
+  requestAnimationFrame(draw);
 }
 
-function startGame(){
-  menu.style.display="none";
-  ui.style.display="block";
-  c.style.display="block";
-  c.style.display="block";
-  c.style.display="block";
-  c.style.display="block";
-  c.style.display="block";
-  c.style.display="block";
-  c.style.display="block";
-  c.style.display="block";
-  c.style.display="block";
-  c.style.display="block";
-  c.style.display="block";
-  c.style.display="block";
-  c.style.display="block";
-  c.style.display="block";
-  c.style.display="block";
-  c.style.display="block";
-  c.style.display="block";
-  c.style.display="block";
-  c.style.display="block";
-  c.style.display="block";
-  c.style.display="block";
-  c.style.display="block";
-  c.style.display="block";
-  c.style.display="block";
-  c.style.display="block";
-  c.style.display="block";
-  c.style.display="block";
-  c.style.display="block";
-  c.style.display="block";
-  c.style.display="block";
-  c.style.display="block";
-  c.style.display="block";
-  c.style.display="block";
-  spawnTurrets();
-  setInterval(upd,1000/60);
-  drw();
-}
-
-spawnTurrets(); // also spawns 5 on load in case player skips menu
-canvas.style.display="none";
+setInterval(update,1000/60);
+draw();
 </script>
 
 </body>
