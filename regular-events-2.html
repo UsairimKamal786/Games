@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Usairim Web Tech Games Store</title>
+    <link rel="icon" href="my-logo.png">
+    <link rel="shortcut icon" href="my-logo.png">
+<base href="">
+
+    <style>
+       /* General Styles */
+
+/* Header Styles */
+
+body{
+  background-color: black;
+  color: white;
+}
+/* Game & App Cards */
+.container {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-top: 30px;
+    gap: 20px; /* Space between cards */
+}
+
+.card {
+    background: #1e1e1e;
+    border-radius: 15px;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+    padding: 15px;
+    width: 280px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    text-align: center;
+}
+
+.card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0px 8px 16px rgba(255, 215, 0, 0.5);
+}
+
+.card img {
+    width: 100%;
+    border-radius: 10px;
+}
+
+.card a {
+    display: block;
+    margin-top: 15px;
+    padding: 12px;
+    background: #ff4757;
+    color: white;
+    text-decoration: none;
+    border-radius: 5px;
+    font-size: 16px;
+    font-weight: bold;
+    transition: background 0.3s ease;
+}
+
+.card a:hover {
+    background: #e84118;
+}
+ 
+a{
+  text-decoration: none;
+   color:white;
+}
+
+li{
+  list-style: none;
+}
+
+:root{
+  --drop-shadow:0px 3px 5px 2px rgba(0, 0, 0, 0.171);
+  --main-color:#f64d4a;
+}
+
+/* Navbar */
+
+.navbar{
+  width: 100%;
+  padding: 20px 0;
+}
+
+.container-1{
+  width: 80%;
+  margin: auto;
+}
+
+.container-1 h2{
+  font-weight: 700;
+  font-size: 20px;
+  cursor: pointer;
+  color: rgb(31, 31, 31);
+}
+
+.navbar .container{
+  display: grid;
+  grid-template-columns: repeat(2,1fr);
+}
+
+.nav{
+  justify-self: flex-end;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.nav a{
+  margin-right: 70px;
+  font-weight: 100;
+  font-size: 14px;
+  color: black;
+}
+
+.nav .cart{
+  margin-left:70px;
+  padding: 10px 35px;
+  border: 2px solid black;
+  border-radius: 3px;
+}
+
+/* Main section */
+.main{
+  width: 100%;
+}
+
+.main-container{
+  width: 85%;
+  margin: 50px auto;
+}
+
+.main .main-container{
+  display: grid;
+  grid-template-columns: repeat(2,1fr);
+}
+
+.main-container div{
+  animation: fadeIn 0.8s ease-in-out;
+}
+
+.main-container div h2{
+  color: #3881ba;
+  margin-top: 50px;
+  margin-bottom: 20px;
+}
+
+.main-container h1{
+  font-size: 60px;
+  margin: 15px 0;
+  color: rgb(31, 31, 31);
+}
+.main-container p{
+  font-size: 15px;
+  margin: 15px 0;
+}
+
+.main-container .btn{
+  background: var(--main-color);
+  padding: 15px 25px;
+  margin: 10px 0;
+  display: inline-block;
+  font-size: 15px;
+  color: white ;
+  border-radius: 1px;
+  box-shadow: var(--drop-shadow);
+}
+
+.main-container img{
+  width: 100%;
+}
+
+#spacer-needed{
+  margin-left: 9px;
+}
+
+
+
+#foot{
+   text-align: center;
+   text-decoration: none;
+}
+
+
+    #loader {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+    }
+
+    #loader img {
+      width: 100px;
+    }
+
+    #main-content {
+      display: none;
+      padding: 20px;
+    }
+    </style>
+<meta property="description" content="Play Online secure PC games for low and high-end computers. Usairim Web Tech Games Store offers trusted games for free. Visit Now!">
+<!-- Open Graph data -->
+<meta name="author" content="Usairim Kamal">
+<meta name="language" content="EN" />
+<meta name="copyright" content="© 2025 Usairim Web Tech Games Store" />
+</head>
+<body>
+
+</head>
+<body>
+
+ 
+ 
+</head>
+<body>
+
+  <!-- Loader -->
+  <div id="loader">
+    <img src="Load.gif" alt="Loading..." />
+  </div>
+
+
+
+  <!-- Script to hide loader -->
+  <script>
+    window.addEventListener("load", function () {
+      setTimeout(function () {
+        document.getElementById("loader").style.display = "none";
+        document.getElementById("games").style.display = "block";
+      }, 1999); 
+    });
+  </script>
+
+ <div id="games">
+ 
+    
+    <div class="container">
+        <div class="card">
+            <img src="2026-hoverboard-adventure.png" alt="2026 Hoverboard Adventure">
+            <h2>2026 Hoverboard Adventure</h2>
+            <a href="2026-hoverboard-adventure.html" target="_blank">Play Now</a>
+        </div>
+     </div>
+
+
+</body>
+
+<script>
+function secureRedirect(targetURL) {
+    // Redirect to about:blank
+    window.location.href = "about:blank";
+
+    // Wait for 5 seconds, then redirect to the target file
+    setTimeout(() => {
+        window.location.replace(targetURL);
+    }, 5000);
+}
+</script>
+
+<!-- Firebase Scripts -->
+  <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-database-compat.js"></script
+</head>
+<!-- Big Footer -->
+<footer style="background-color: #1a1a1a; color: #f1f1f1; padding: 40px 20px; font-family: Arial, sans-serif;">
+  <div style="max-width: 1000px; margin: auto; display: flex; flex-wrap: wrap; justify-content: space-between;">
+    
+    <!-- Column 1 -->
+    <div style="flex: 1; min-width: 200px; margin-bottom: 20px;">
+      <h3 style="color: #00ffcc;">Free Games</h3>
+      <p>Play fun, free games for kids and learners. <br> No sign-up needed!</p>
+    </div>
+    
+    <!-- Column 2 -->
+    <div style="flex: 1; min-width: 200px; margin-bottom: 20px;">
+      <h4 style="color: #00ffcc;">Navigation</h4>
+      <ul style="list-style: none; padding: 0;">
+        <li><a href="index.html" style="color: #f1f1f1; text-decoration: none;">Home</a></li>
+        <li><a href="contact.html" style="color: #f1f1f1; text-decoration: none;">Contact Us</a></li>
+<li><a href="rate.html" style="color: #f1f1f1; text-decoration: none;">Rate Us</a></li>
+      </ul>
+    </div>
+    
+    <!-- Column 3 -->
+    <div style="flex: 1; min-width: 200px; margin-bottom: 20px;">
+      <h4 style="color: #00ffcc;">Contact</h4>
+      <p>Email: usairimkamal2016@gmail.com</p>
+     
+    </div>
+  </div>
+<footer>
+<div id="foot">
+  <p>&copy All Right Reserved by Usairim Web Tech</p>
+</div>
+
+</footer>
+
+</body>
+</body>
+
+</html>
