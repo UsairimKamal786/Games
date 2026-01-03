@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>2026 Hoverboard Game - Fast Mode</title>
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      text-align: center;
+      background: linear-gradient(#0f2027, #203a43, #2c5364);
+      color: #fff;
+      margin: 0;
+      padding: 0;
+    }
+    h1 {
+      margin-top: 20px;
+    }
+    #gameArea {
+      position: relative;
+      margin: 20px auto;
+      width: 400px;
+      height: 600px;
+      border: 3px solid #fff;
+      overflow: hidden;
+      background: radial-gradient(circle at center, #1f1f1f, #000);
+      border-radius: 15px;
+    }
+    #player {
+      position: absolute;
+      bottom: 10px;
+      left: 180px;
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, #ff00ff, #00ffff);
+      border-radius: 50%;
+      box-shadow: 0 0 15px #00ffff;
+      transition: left 0.05s;
+    }
+    .orb {
+      position: absolute;
+      width: 25px;
+      height: 25px;
+      background: radial-gradient(circle, #ffff00, #ff9900);
+      border-radius: 50%;
+      box-shadow: 0 0 10px #ff9900;
+    }
+    #score {
+      font-size: 20px;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h1>2026 Hoverboard Adventure - FAST MODE</h1>
+  <p>Use ⬅️ and ➡️ to move. Collect the glowing orbs!</p>
+  <div id="gameArea">
+    <div id="player"></div>
+  </div>
+  <p id="score">Score: 0</p>
+
+  <script>
+    const gameArea = document.getElementById('gameArea');
+    const player = document.getElementById('player');
+    const scoreDisplay = document.getElementById('score');
+
+    let playerPos = 180;
+    let score = 0;
+    let orbs = [];
+
+    // Speed settings
+    const playerSpeed = 40; // faster movement
+    const orbSpeed = 8;     // faster falling
+    const orbInterval = 600; // spawn faster
+
+    // Create orbs
+    function createOrb() {
+      const orb = document.createElement('div');
+      orb.classList.add('orb');
+      orb.style.left = Math.random() * 375 + 'px';
+      orb.style.top = '-30px';
+      gameArea.appendChild(orb);
+      orbs.push(orb);
+    }
+
+    // Move orbs
+    function moveOrbs() {
+      orbs.forEach((orb, index) => {
+        let top = parseFloat(orb.style.top);
+        top += orbSpeed;
+        orb.style.top = top + 'px';
+
+        // Check collision
+        if (
+          top + 25 > 560 &&
+          parseFloat(orb.style.left) + 25 > playerPos &&
+          parseFloat(orb.style.left) < playerPos + 40
+        ) {
+          score += 1;
+          scoreDisplay.textContent = 'Score: ' + score;
+          gameArea.removeChild(orb);
+          orbs.splice(index, 1);
+        }
+
+        // Remove offscreen
+        if (top > 600) {
+          gameArea.removeChild(orb);
+          orbs.splice(index, 1);
+        }
+      });
+    }
+
+    // Player movement
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowLeft') playerPos -= playerSpeed;
+      if (e.key === 'ArrowRight') playerPos += playerSpeed;
+
+      if (playerPos < 0) playerPos = 0;
+      if (playerPos > 360) playerPos = 360;
+
+      player.style.left = playerPos + 'px';
+    });
+
+    // Main game loop
+    setInterval(() => { moveOrbs(); }, 20);
+    setInterval(() => { createOrb(); }, orbInterval);
+  </script>
+</body>
+</html>
