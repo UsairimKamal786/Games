@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Catch the Ball Game</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      background-color: #f0f8ff;
+    }
+
+    #gameArea {
+      position: relative;
+      margin: 20px auto;
+      width: 400px;
+      height: 400px;
+      background-color: #87ceeb;
+      border: 2px solid #000;
+      overflow: hidden;
+    }
+
+    #player {
+      position: absolute;
+      bottom: 10px;
+      left: 180px;
+      width: 40px;
+      height: 40px;
+      background-color: #ff4500;
+    }
+
+    #ball {
+      position: absolute;
+      top: 0;
+      left: 200px;
+      width: 20px;
+      height: 20px;
+      background-color: #ffff00;
+      border-radius: 50%;
+    }
+  </style>
+</head>
+<body>
+  <h1>Catch the Ball!</h1>
+  <div id="gameArea">
+    <div id="player"></div>
+    <div id="ball"></div>
+  </div>
+  <p>Score: <span id="score">0</span></p>
+
+  <script>
+    const player = document.getElementById('player');
+    const ball = document.getElementById('ball');
+    const scoreDisplay = document.getElementById('score');
+
+    let score = 0;
+    let ballTop = 0;
+    let ballLeft = Math.floor(Math.random() * 380); // random start
+    let playerLeft = 180;
+
+    ball.style.left = ballLeft + 'px';
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowLeft' && playerLeft > 0) playerLeft -= 20;
+      if (e.key === 'ArrowRight' && playerLeft < 360) playerLeft += 20;
+      player.style.left = playerLeft + 'px';
+    });
+
+    function fallBall() {
+      ballTop += 5;
+      ball.style.top = ballTop + 'px';
+
+      // collision detection
+      if (
+        ballTop + 20 >= 360 &&
+        ballLeft + 20 >= playerLeft &&
+        ballLeft <= playerLeft + 40
+      ) {
+        score++;
+        scoreDisplay.textContent = score;
+        resetBall();
+      }
+
+      // reset if missed
+      if (ballTop > 400) {
+        resetBall();
+      }
+    }
+
+    function resetBall() {
+      ballTop = 0;
+      ballLeft = Math.floor(Math.random() * 380);
+      ball.style.top = ballTop + 'px';
+      ball.style.left = ballLeft + 'px';
+    }
+
+    setInterval(fallBall, 50);
+  </script>
+</body>
+</html>
