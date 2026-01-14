@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Cyber Runner 2026</title>
+<style>
+  body { margin:0; overflow:hidden; background:#000; font-family:sans-serif; }
+  canvas { display:block; margin:0 auto; background:#000; }
+  #score { position:absolute; top:10px; left:10px; font-size:24px; color:#0ff; }
+</style>
+</head>
+<body>
+<div id="score">Score: 0</div>
+<canvas id="gameCanvas"></canvas>
+<script>
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+let keys = {};
+let obstacles = [];
+let coins = [];
+let score = 0;
+let speed = 5;
+let player = { x: canvas.width/2, y: canvas.height-120, width: 50, height: 30 };
+
+// Listen to key events
+document.addEventListener('keydown', e => keys[e.key] = true);
+document.addEventListener('keyup', e => keys[e.key] = false);
+
+// Obstacle class
+class Obstacle {
+  constructor() {
+    this.width = Math.random()*60 + 40;
+    this.height = 20;
+    this.x = Math.random()*(canvas.width-this.width);
+    this.y = -50;
+    this.color = '#f0f';
+  }
+  update() { this.y += speed; }
+  draw() { ctx.fillStyle=this.color; ctx.fillRect(this.x,this.y,this.width,this.height); }
+}
+
+// Coin class
+class Coin {
+  constructor() {
+    this.radius = 10;
+    this.x = Math.random()*(canvas.width-20)+10;
+    this.y = -50;
+    this.color = '#0ff';
+  }
+  update() { this.y += speed; }
+  draw() { 
+    ctx.fillStyle=this.color; 
+    ctx.beginPath();
+    ctx.arc(this.x,this.y,this.radius,0,Math.PI*2);
+    ctx.fill();
+  }
+}
+
+// Collision detection
+function collideRect(a,b){ return !(a.x > b.x+b.width || a.x+a.width < b.x || a.y > b.y+b.height || a.y+a.height < b.y); }
+function collideCircleRect(circle, rect){ 
+  let distX = Math.abs(circle.x - rect.x-rect.width/2);
+  let distY = Math.abs(circle.y - rect.y-rect.height/2);
+  if(distX > (rect.width/2 + circle.radius)) return false;
+  if(distY > (rect.height/2 + circle.radius)) return false;
+  if(distX <= rect.width/2) return true;
+  if(distY <= rect.height/2) return true;
+  let dx = distX - rect.width/2;
+  let dy = distY - rect.height/2;
+  return (dx*dx + dy*dy <= circle.radius*circle.radius);
+}
+
+// Update game objects
+function update() {
+  // Player movement
+  if(keys['ArrowLeft'] || keys['a']) player.x -= 10;
+  if(keys['ArrowRight'] || keys['d']) player.x += 10;
+  // Keep inside canvas
+  player.x = Math.max(0, Math.min(canvas.width-player.width, player.x));
+  
+  // Spawn obstacles
+  if(Math.random() < 0.02) obstacles.push(new Obstacle());
+  obstacles.forEach((o,i)=>{
+    o.update();
+    if(o.y>canvas.height) obstacles.splice(i,1);
+    if(collideRect(player,o)){ alert('Game Over! Score: '+score); location.reload(); }
+  });
+  
+  // Spawn coins
+  if(Math.random() < 0.01) coins.push(new Coin());
+  coins.forEach((c,i)=>{
+    c.update();
+    if(c.y>canvas.height) coins.splice(i,1);
+    if(collideCircleRect(c, player)){ coins.splice(i,1); score+=5; document.getElementById('score').innerText='Score: '+score; }
+  });
+  
+  // Increase speed gradually
+  speed += 0.001;
+}
+
+// Draw everything
+function draw() {
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  
+  // Draw player hoverboard
+  ctx.fillStyle='#0f0';
+  ctx.fillRect(player.x, player.y, player.width, player.height);
+  ctx.fillStyle='#0ff';
+  ctx.fillRect(player.x+5, player.y+player.height, player.width-10,5); // glow trail
+  
+  // Draw obstacles
+  obstacles.forEach(o=>o.draw());
+  
+  // Draw coins
+  coins.forEach(c=>c.draw());
+}
+
+// Main loop
+function loop() {
+  update();
+  draw();
+  requestAnimationFrame(loop);
+}
+loop();
+</script>
+</body>
+</html>
