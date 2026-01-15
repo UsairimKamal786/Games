@@ -28,7 +28,7 @@ I use a mix of web technologies to bring games to life:
 
 
 ## 🎯 How to Play / Contribute
-1. Visit the [Games section](https://usairimkamal786.github.io/Website%20Link.html)  
+1. Visit the [Games section](https://usairimkamal786.github.io/year-choose)  
 2. Click a game and enjoy!  
 3. Fork the repo if you want to **add your own game**, tweak existing ones, or improve features  
 4. Submit a Pull Request and your game could appear on the site!  
