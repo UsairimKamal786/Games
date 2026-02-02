@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Ice Hopper Endless Easy</title>
+<style>
+  body { margin:0; overflow:hidden; background:#a0e0ff; font-family:sans-serif; }
+  #gameCanvas { display:block; margin:0 auto; background:linear-gradient(to bottom, #d0f0ff, #80dfff); touch-action: none; }
+  .controls {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 20px;
+  }
+  .btn {
+    width: 60px;
+    height: 60px;
+    background: rgba(255,255,255,0.7);
+    border-radius: 30px;
+    text-align: center;
+    line-height: 60px;
+    font-size: 30px;
+    user-select: none;
+  }
+</style>
+</head>
+<body>
+<canvas id="gameCanvas" width="600" height="400"></canvas>
+<div class="controls">
+  <div class="btn" id="leftBtn">&#8592;</div>
+  <div class="btn" id="jumpBtn">&#8593;</div>
+  <div class="btn" id="rightBtn">&#8594;</div>
+</div>
+<script>
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+
+const player = { x: 50, y: 300, width: 30, height: 30, color:'#fff', vy:0, onGround:false };
+const gravity = 0.7;
+const jumpPower = -12;
+const moveSpeed = 6;
+
+let cameraOffset = 0; // world scroll
+let scrollSpeed = 2; // auto-scroll speed
+
+let platformSpacing = 150;
+let platforms = [];
+let gameOver = false;
+let score = 0;
+let bestScore = 0;
+
+let keys = { left:false, right:false, jump:false };
+
+// Initialize game
+function initGame(){
+  player.x = 50;
+  player.y = 300;
+  player.vy = 0;
+  cameraOffset = 0;
+  platforms = [
+    { x:0, y:350, width:400, height:20, landed:false }, // first big safe platform
+    { x:450, y:320, width:120, height:20, landed:false },
+    { x:600, y:290, width:120, height:20, landed:false }
+  ];
+  gameOver = false;
+  score = 0;
+}
+
+initGame();
+
+// draw everything
+function draw(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+
+  // draw platforms
+  ctx.fillStyle = '#aef';
+  platforms.forEach(p=>ctx.fillRect(p.x - cameraOffset, p.y, p.width, p.height));
+
+  // draw player
+  ctx.fillStyle = player.color;
+  ctx.fillRect(player.x, player.y, player.width, player.height);
+
+  // draw score
+  ctx.fillStyle='black';
+  ctx.font='20px sans-serif';
+  ctx.fillText('Score: '+score,10,30);
+
+  // if game over, show message
+  if(gameOver){
+    ctx.fillStyle='red';
+    ctx.font='30px sans-serif';
+    ctx.fillText('You fell!',200,150);
+    ctx.fillStyle='black';
+    ctx.font='25px sans-serif';
+    ctx.fillText('Score: '+score,220,190);
+    ctx.fillText('Best: '+bestScore,220,220);
+    ctx.fillText('Tap or press Space to restart',100,260);
+  }
+}
+
+// update game
+function update(){
+  if(gameOver) return;
+
+  // move player
+  if(keys.left) player.x -= moveSpeed;
+  if(keys.right) player.x += moveSpeed;
+
+  // gravity
+  player.vy += gravity;
+  player.y += player.vy;
+  player.onGround = false;
+
+  // platform collision
+  platforms.forEach(p=>{
+    if(player.x + player.width > p.x - cameraOffset &&
+       player.x < p.x - cameraOffset + p.width &&
+       player.y + player.height > p.y &&
+       player.y + player.height < p.y + p.height + player.vy){
+      player.y = p.y - player.height;
+      player.vy = 0;
+      player.onGround = true;
+
+      if(!p.landed){
+        score += 10;
+        p.landed = true;
+      }
+    }
+  });
+
+  // auto-scroll world
+  cameraOffset += scrollSpeed;
+
+  // remove off-screen platforms
+  platforms = platforms.filter(p => p.x + p.width - cameraOffset > -50);
+
+  // add new platforms endlessly
+  while(platforms[platforms.length-1].x - cameraOffset < canvas.width){
+    const last = platforms[platforms.length-1];
+    const newY = Math.max(200, Math.min(350, last.y + (Math.random()*60-30)));
+    platforms.push({ x: last.x + platformSpacing, y: newY, width:120, height:20, landed:false });
+  }
+
+  // fall check
+  if(player.y > canvas.height){
+    gameOver = true;
+    if(score > bestScore) bestScore = score;
+  }
+}
+
+// game loop
+function loop(){
+  update();
+  draw();
+  requestAnimationFrame(loop);
+}
+
+// mobile buttons
+document.getElementById('leftBtn').addEventListener('touchstart',()=>keys.left=true);
+document.getElementById('leftBtn').addEventListener('touchend',()=>keys.left=false);
+document.getElementById('rightBtn').addEventListener('touchstart',()=>keys.right=true);
+document.getElementById('rightBtn').addEventListener('touchend',()=>keys.right=false);
+document.getElementById('jumpBtn').addEventListener('touchstart',()=>{
+  if(player.onGround) player.vy = jumpPower;
+});
+
+// keyboard controls
+document.addEventListener('keydown', e=>{
+  if(e.code==='ArrowLeft'||e.code==='KeyA') keys.left=true;
+  if(e.code==='ArrowRight'||e.code==='KeyD') keys.right=true;
+  if(e.code==='Space'||e.code==='KeyW'){ if(player.onGround) player.vy=jumpPower; }
+  if(gameOver && (e.code==='Space'||e.type==='keydown')) initGame(); // restart
+});
+document.addEventListener('keyup', e=>{
+  if(e.code==='ArrowLeft'||e.code==='KeyA') keys.left=false;
+  if(e.code==='ArrowRight'||e.code==='KeyD') keys.right=false;
+});
+
+// mobile tap to restart
+canvas.addEventListener('touchstart', ()=>{
+  if(gameOver) initGame();
+});
+
+loop();
+</script>
+</body>
+</html>
