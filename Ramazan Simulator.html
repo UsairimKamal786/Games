@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Ramadan Simulator - 10 Worlds</title>
+<style>
+body { margin:0; background:#0b132b; color:white; font-family:Arial; text-align:center; }
+canvas { background:#1c2541; display:block; margin:auto; border:3px solid #3a86ff; }
+</style>
+</head>
+<body>
+
+<h2>🌙 Ramadan Simulator - 10 Worlds</h2>
+<p>Money: <span id="money">0</span> | 🍇 <span id="d">0</span> 🧃 <span id="j">0</span> 🍛 <span id="m">0</span></p>
+<p>Move with Arrow Keys — Stand near tables to serve automatically - Complete all the world 3 times.</p>
+
+<canvas id="game" width="800" height="500"></canvas>
+
+<script>
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
+
+// Player & game state
+let money = 500;
+let inventory = { dates:3, juice:3, meal:3 };
+let unlockedWorld = 1;
+let currentWorld = 0; // 0 = home
+let player = { x:100, y:250, speed:3 };
+
+// AFK & shop
+let lastAfkTime = 0;
+let afkInterval = 2000; // 2 sec per tick
+let afkAmount = 1;
+let shopCooldown = 0;
+const shopCooldownDuration = 14000; // 14 sec
+
+// Home zones
+const afkZone = { x:50, y:50, w:120, h:120 };
+const shopZone = { x:50, y:300, w:120, h:120 };
+const returnZone = { x:700, y:50, w:80, h:80 };
+
+// Portals
+const portals = [
+  { x:250, y:50, world:1 }, { x:400, y:50, world:2 }, { x:550, y:50, world:3 },
+  { x:325, y:150, world:4 }, { x:475, y:150, world:5 }, { x:250, y:250, world:6 },
+  { x:400, y:250, world:7 }, { x:550, y:250, world:8 }, { x:325, y:350, world:9 },
+  { x:475, y:350, world:10 }
+];
+
+// Tables per world
+let worldTables = {};
+for(let w=1; w<=10; w++){
+  let tables = [];
+  for(let i=0; i<4; i++){
+    tables.push({x:200+(i%2)*300, y:100+Math.floor(i/2)*200, served:false, required:{dates:1, juice:1, meal:1}});
+  }
+  worldTables[w] = tables;
+}
+
+// Track world difficulty (1 to 3)
+let worldDifficulty = {};
+for(let w=1; w<=10; w++) worldDifficulty[w]=0;
+
+const keys = {};
+document.addEventListener("keydown", e=>keys[e.key]=true);
+document.addEventListener("keyup", e=>keys[e.key]=false);
+
+let worldMessage = "";
+
+// Helper
+function inZone(p,z){ return p.x>z.x && p.x<z.x+z.w && p.y>z.y && p.y<z.y+z.h; }
+
+// Update game state
+function update(){
+  const now = Date.now();
+
+  // Player movement
+  if(keys["ArrowLeft"]) player.x-=player.speed;
+  if(keys["ArrowRight"]) player.x+=player.speed;
+  if(keys["ArrowUp"]) player.y-=player.speed;
+  if(keys["ArrowDown"]) player.y+=player.speed;
+
+  if(currentWorld===0){
+    // AFK earning
+    if(inZone(player, afkZone) && now - lastAfkTime >= afkInterval){
+      money += afkAmount;
+      lastAfkTime = now;
+    }
+
+    // Shop purchase
+    let shopCost = 50 + (currentWorld-1)*10 + worldDifficulty[unlockedWorld]*10;
+    if(inZone(player, shopZone) && money>=shopCost && now>=shopCooldown){
+      money -= shopCost;
+      inventory.dates++;
+      inventory.juice++;
+      inventory.meal++;
+      shopCooldown = now + shopCooldownDuration;
+    }
+
+    // Enter world
+    portals.forEach(p=>{
+      if(Math.hypot(player.x-p.x, player.y-p.y)<30 && unlockedWorld>=p.world){
+        enterWorld(p.world);
+      }
+    });
+
+  } else {
+    // Serve tables (no money)
+    autoServe();
+    // Return home
+    if(inZone(player, returnZone)){
+      currentWorld=0;
+      player.x=100; player.y=250;
+    }
+  }
+
+  updateUI();
+}
+
+// Auto-serve
+function autoServe(){
+  let tables = worldTables[currentWorld];
+  tables.forEach(t=>{
+    let dist = Math.hypot(player.x - t.x, player.y - t.y);
+    if(dist<40 && !t.served){
+      let req = t.required;
+      if(inventory.dates>=req.dates && inventory.juice>=req.juice && inventory.meal>=req.meal){
+        inventory.dates -= req.dates;
+        inventory.juice -= req.juice;
+        inventory.meal -= req.meal;
+        t.served = true;
+        checkWorldComplete();
+      }
+    }
+  });
+}
+
+// Check world completion & difficulty
+function checkWorldComplete(){
+  let tables = worldTables[currentWorld];
+  if(tables.every(t=>t.served)){
+    worldDifficulty[currentWorld]++;
+    if(worldDifficulty[currentWorld]<3){
+      worldMessage = `🌟 World ${currentWorld} Completed! Difficulty ${worldDifficulty[currentWorld]}`;
+      // increase required items
+      worldTables[currentWorld].forEach(t=>{
+        t.served=false;
+        t.required.dates +=1;
+        t.required.juice +=1;
+        t.required.meal +=1;
+      });
+    } else {
+      worldMessage = `🏆 World ${currentWorld} Fully Completed!`;
+    }
+    setTimeout(()=>{ worldMessage=""; },3000);
+
+    // Unlock next world
+    if(currentWorld===unlockedWorld && unlockedWorld<10) unlockedWorld++;
+
+    // Check if all worlds fully completed
+    let allComplete = Object.values(worldDifficulty).every(d=>d>=3);
+    if(allComplete){
+      worldMessage = "🎉 You Completed Ramadan Simulator! 🎉";
+    }
+  }
+}
+
+// Enter world
+function enterWorld(w){
+  currentWorld=w;
+  player.x=100; player.y=250;
+}
+
+// Draw game
+function draw(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+
+  if(currentWorld===0){
+    // AFK zone
+    ctx.strokeRect(afkZone.x,afkZone.y,afkZone.w,afkZone.h);
+    ctx.fillText("💰 AFK", afkZone.x+20, afkZone.y+60);
+
+    // Shop
+    ctx.strokeRect(shopZone.x,shopZone.y,shopZone.w,shopZone.h);
+    ctx.fillText("🛒 Shop", shopZone.x+20, shopZone.y+60);
+
+    const now = Date.now();
+    let shopCost = 50 + (currentWorld-1)*10 + worldDifficulty[unlockedWorld]*10;
+    ctx.font = "20px Arial";
+    if(now < shopCooldown){
+      let remaining = Math.ceil((shopCooldown - now)/1000);
+      ctx.fillStyle="red";
+      ctx.fillText(`🛒 Cooldown: ${remaining}s (${shopCost}$)`, shopZone.x, shopZone.y-10);
+    } else {
+      ctx.fillStyle="green";
+      ctx.fillText(`🛒 Ready (${shopCost}$)`, shopZone.x, shopZone.y-10);
+    }
+    ctx.fillStyle="white";
+
+    // Portals
+    portals.forEach(p=>{
+      ctx.fillText(unlockedWorld>=p.world ? "🚪" : "🔒", p.x, p.y);
+      ctx.fillText("W"+p.world, p.x-10, p.y+20);
+    });
+
+  } else {
+    // Tables
+    let tables = worldTables[currentWorld];
+    tables.forEach(t=>{
+      ctx.fillText("🪑🧑🪑", t.x-20, t.y-20);
+      ctx.strokeRect(t.x-30, t.y-10, 60, 20);
+      if(t.served) ctx.fillText("🍇🧃🍛", t.x-25, t.y+20);
+    });
+    // Return home
+    ctx.strokeRect(returnZone.x,returnZone.y,returnZone.w,returnZone.h);
+    ctx.fillText("🏠 Home", returnZone.x+5, returnZone.y+50);
+  }
+
+  ctx.font="30px Arial";
+  ctx.fillText("🧍", player.x, player.y);
+
+  if(worldMessage!==""){
+    ctx.font="28px Arial";
+    ctx.fillStyle="yellow";
+    ctx.fillText(worldMessage, 150, 50);
+    ctx.fillStyle="white";
+  }
+}
+
+// UI
+function updateUI(){
+  document.getElementById("money").textContent=Math.floor(money);
+  document.getElementById("d").textContent=inventory.dates;
+  document.getElementById("j").textContent=inventory.juice;
+  document.getElementById("m").textContent=inventory.meal;
+}
+
+function loop(){ update(); draw(); requestAnimationFrame(loop); }
+
+loop();
+</script>
+
+</body>
+</html>
