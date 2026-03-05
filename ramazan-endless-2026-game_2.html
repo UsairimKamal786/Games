@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Ramadan Endless Runner</title>
+
+<style>
+body{
+background:#0b1d3a;
+color:white;
+text-align:center;
+font-family:Arial;
+}
+
+#game{
+width:700px;
+height:220px;
+border:4px solid gold;
+margin:auto;
+position:relative;
+overflow:hidden;
+background:#122b63;
+}
+
+#moon{
+position:absolute;
+bottom:0;
+left:60px;
+font-size:40px;
+}
+
+#lantern{
+position:absolute;
+bottom:0;
+right:-50px;
+font-size:40px;
+}
+
+#score{
+font-size:22px;
+margin:10px;
+}
+
+.jump{
+animation: jump 0.55s;
+}
+
+@keyframes jump{
+0%{bottom:0;}
+50%{bottom:130px;}
+100%{bottom:0;}
+}
+
+.move{
+animation: move 2s linear infinite;
+}
+
+@keyframes move{
+0%{right:-50px;}
+100%{right:750px;}
+}
+</style>
+</head>
+
+<body>
+
+<h1>🌙 Ramadan Endless Runner</h1>
+<div id="score">Score: 0</div>
+<p>Press SPACE to jump</p>
+
+<div id="game">
+<div id="moon">🌙</div>
+<div id="lantern">🏮</div>
+</div>
+
+<script>
+
+let moon = document.getElementById("moon")
+let lantern = document.getElementById("lantern")
+let score = 0
+
+lantern.classList.add("move")
+
+// jump control
+document.addEventListener("keydown",function(e){
+
+if(e.code==="Space"){
+
+if(!moon.classList.contains("jump")){
+moon.classList.add("jump")
+
+setTimeout(()=>{
+moon.classList.remove("jump")
+},550)
+
+}
+
+}
+
+})
+
+// rectangle collision function
+function isColliding(a,b){
+
+let aRect = a.getBoundingClientRect()
+let bRect = b.getBoundingClientRect()
+
+return !(
+aRect.right < bRect.left ||
+aRect.left > bRect.right ||
+aRect.bottom < bRect.top ||
+aRect.top > bRect.bottom
+)
+
+}
+
+let scored = false
+
+setInterval(function(){
+
+// collision detection
+if(isColliding(moon,lantern)){
+alert("Game Over 🌙 Score: "+score)
+location.reload()
+}
+
+// scoring
+let lanternRight = parseInt(window.getComputedStyle(lantern).getPropertyValue("right"))
+
+if(lanternRight > 740 && !scored){
+score++
+document.getElementById("score").innerHTML="Score: "+score
+scored = true
+}
+
+if(lanternRight < 100){
+scored = false
+}
+
+},20)
+
+</script>
+
+</body>
+</html>
