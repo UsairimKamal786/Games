@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Ramadan Good Deeds Game</title>
+<style>
+body{
+background:#0b1a2f;
+color:white;
+font-family:Arial;
+text-align:center;
+}
+
+h1{color:gold;}
+
+#score{
+font-size:22px;
+margin:10px;
+}
+
+canvas{
+background:#142b4f;
+border:3px solid gold;
+display:block;
+margin:auto;
+}
+</style>
+</head>
+
+<body>
+
+<h1>Ramadan Good Deeds Catcher</h1>
+<div id="score">Score: 0</div>
+
+<canvas id="game" width="600" height="500"></canvas>
+
+<script>
+
+const canvas=document.getElementById("game");
+const ctx=canvas.getContext("2d");
+
+let score=0;
+let items=[];
+
+let speed=12; // PLAYER SPEED
+
+let player={
+x:270,
+y:440,
+width:120, // BIGGER CATCH AREA
+height:40
+};
+
+const goodDeeds=["Pray","Fast","Charity","Help","Smile","Respect","Forgive","Kindness","Share","Study"];
+const badDeeds=["Lie","Cheat","Steal","Fight","Insult","Lazy","Rude","Gossip","Bullying","Greedy"];
+
+document.addEventListener("keydown",movePlayer);
+
+function movePlayer(e){
+
+if(e.key==="ArrowLeft"){
+player.x-=speed;
+}
+
+if(e.key==="ArrowRight"){
+player.x+=speed;
+}
+
+/* keep player inside screen */
+if(player.x<0) player.x=0;
+if(player.x+player.width>600) player.x=600-player.width;
+
+}
+
+function spawnItem(){
+
+let good=Math.random()>0.35;
+
+let word;
+
+if(good){
+word=goodDeeds[Math.floor(Math.random()*goodDeeds.length)];
+}else{
+word=badDeeds[Math.floor(Math.random()*badDeeds.length)];
+}
+
+items.push({
+x:Math.random()*560,
+y:0,
+text:word,
+good:good
+});
+
+}
+
+function update(){
+
+ctx.clearRect(0,0,600,500);
+
+/* draw player basket */
+ctx.fillStyle="gold";
+ctx.fillRect(player.x,player.y,player.width,player.height);
+
+items.forEach((item,index)=>{
+
+item.y+=1.8; // slower falling
+
+ctx.fillStyle=item.good?"lightgreen":"red";
+ctx.font="16px Arial";
+ctx.fillText(item.text,item.x,item.y);
+
+/* BIGGER HITBOX */
+if(
+item.y>player.y-10 &&
+item.y<player.y+player.height &&
+item.x>player.x-20 &&
+item.x<player.x+player.width+20
+){
+
+if(item.good){
+score+=5;
+}else{
+score-=3;
+}
+
+document.getElementById("score").innerText="Score: "+score;
+
+items.splice(index,1);
+
+}
+
+if(item.y>500){
+items.splice(index,1);
+}
+
+});
+
+requestAnimationFrame(update);
+}
+
+setInterval(spawnItem,900);
+
+update();
+
+/* 2 minute timer */
+
+setTimeout(()=>{
+alert("Time Over! Your Score: "+score);
+},120000);
+
+</script>
+
+</body>
+</html>
