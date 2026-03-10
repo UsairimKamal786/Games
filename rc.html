@@ -1,0 +1,144 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+<title>Ramadan Endless Moon Catcher</title>
+
+<style>
+body{
+    background:#0b0f2b;
+    color:white;
+    text-align:center;
+    font-family:Arial;
+}
+
+canvas{
+    background:#11164a;
+    border:3px solid gold;
+}
+</style>
+
+</head>
+
+<body>
+
+<h1>Ramadan Endless Moon Catcher</h1>
+<p>Move with ← → keys | Moon = +1 | Cloud = -1</p>
+<p>Score: <span id="score">0</span></p>
+
+<canvas id="game" width="500" height="400"></canvas>
+
+<script>
+
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
+
+let player = {x:220, y:350, w:60, h:20};
+
+let moons = [];
+let clouds = [];
+
+let score = 0;
+
+document.addEventListener("keydown", movePlayer);
+
+function movePlayer(e){
+
+if(e.key==="ArrowLeft") player.x -= 25;
+
+if(e.key==="ArrowRight") player.x += 25;
+
+if(player.x < 0) player.x = 0;
+if(player.x > 440) player.x = 440;
+
+}
+
+function spawnMoon(){
+
+moons.push({
+x:Math.random()*480,
+y:-20,
+size:20
+})
+
+}
+
+function spawnCloud(){
+
+clouds.push({
+x:Math.random()*480,
+y:-20,
+size:30
+})
+
+}
+
+setInterval(spawnMoon,1000);
+setInterval(spawnCloud,2000);
+
+function update(){
+
+ctx.clearRect(0,0,500,400);
+
+ctx.fillStyle="gold";
+ctx.fillRect(player.x,player.y,player.w,player.h);
+
+ctx.fillStyle="yellow";
+
+for(let i=0;i<moons.length;i++){
+
+moons[i].y += 3;
+
+ctx.beginPath();
+ctx.arc(moons[i].x, moons[i].y, 10, 0, Math.PI*2);
+ctx.fill();
+
+if(
+moons[i].y > player.y &&
+moons[i].x > player.x &&
+moons[i].x < player.x + player.w
+){
+
+score++;
+document.getElementById("score").innerText = score;
+
+moons.splice(i,1);
+
+}
+
+}
+
+ctx.fillStyle="white";
+
+for(let i=0;i<clouds.length;i++){
+
+clouds[i].y += 4;
+
+ctx.fillRect(clouds[i].x, clouds[i].y, 40, 20);
+
+if(
+clouds[i].y > player.y &&
+clouds[i].x > player.x &&
+clouds[i].x < player.x + player.w
+){
+
+score--;
+
+document.getElementById("score").innerText = score;
+
+clouds.splice(i,1);
+
+}
+
+}
+
+requestAnimationFrame(update);
+
+}
+
+update();
+
+</script>
+
+</body>
+</html>
