@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Ramadan Lantern Puzzle</title>
+<style>
+body{
+font-family:Arial;
+text-align:center;
+background:#0b1d36;
+color:white;
+}
+
+h1{margin-top:10px}
+
+#board{
+display:grid;
+grid-template-columns:repeat(8,60px);
+gap:5px;
+justify-content:center;
+margin-top:20px;
+}
+
+.cell{
+width:60px;
+height:60px;
+font-size:35px;
+display:flex;
+align-items:center;
+justify-content:center;
+background:#13294b;
+border-radius:10px;
+cursor:pointer;
+}
+
+#score{
+font-size:22px;
+margin-top:10px;
+}
+</style>
+</head>
+
+<body>
+
+<h1>🌙 Ramadan Lantern Puzzle</h1>
+<div id="score">Score: 0</div>
+<div id="board"></div>
+
+<script>
+const lanterns=["🏮","🟢","🔵","🟣","🟡"];
+let grid=[];
+let rows=8;
+let cols=8;
+let score=0;
+
+function randomLantern(){
+return lanterns[Math.floor(Math.random()*lanterns.length)];
+}
+
+function createGrid(){
+grid=[];
+for(let r=0;r<rows;r++){
+let row=[];
+for(let c=0;c<cols;c++){
+row.push(randomLantern());
+}
+grid.push(row);
+}
+}
+
+function draw(){
+const board=document.getElementById("board");
+board.innerHTML="";
+
+for(let r=0;r<rows;r++){
+for(let c=0;c<cols;c++){
+let d=document.createElement("div");
+d.className="cell";
+d.textContent=grid[r][c];
+d.onclick=()=>clickCell(r,c);
+board.appendChild(d);
+}
+}
+
+document.getElementById("score").innerText="Score: "+score;
+}
+
+function getGroup(r,c,color,visited={}){
+let key=r+"-"+c;
+if(r<0||c<0||r>=rows||c>=cols) return [];
+if(grid[r][c]!=color||visited[key]) return [];
+
+visited[key]=true;
+
+return [
+[r,c],
+...getGroup(r+1,c,color,visited),
+...getGroup(r-1,c,color,visited),
+...getGroup(r,c+1,color,visited),
+...getGroup(r,c-1,color,visited)
+];
+}
+
+function clickCell(r,c){
+let color=grid[r][c];
+let group=getGroup(r,c,color);
+
+if(group.length<3) return;
+
+score+=group.length*5;
+
+group.forEach(([gr,gc])=>{
+grid[gr][gc]=null;
+});
+
+dropLanterns();
+draw();
+}
+
+function dropLanterns(){
+for(let c=0;c<cols;c++){
+let stack=[];
+for(let r=rows-1;r>=0;r--){
+if(grid[r][c]) stack.push(grid[r][c]);
+}
+
+for(let r=rows-1;r>=0;r--){
+grid[r][c]=stack.shift()||randomLantern();
+}
+}
+}
+
+createGrid();
+draw();
+</script>
+
+</body>
+</html>
