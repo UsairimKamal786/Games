@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Eid ul-Fitr 2026 — The Night of the Moon</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Crimson+Pro:ital,wght@0,300;0,400;1,300&display=swap');
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{--gold:#d4a843;--gold2:#f0c96a;--deep:#0a0618;--teal:#1a6b6b;--rose:#c0394b;--cream:#f5e8c8;}
+body{background:var(--deep);color:var(--cream);font-family:'Crimson Pro',serif;overflow:hidden;height:100vh;width:100vw;}
+#canvas3d{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;}
+.screen{position:fixed;top:0;left:0;width:100%;height:100%;z-index:10;display:none;flex-direction:column;align-items:center;justify-content:center;}
+.screen.active{display:flex;}
+.overlay{position:fixed;top:0;left:0;width:100%;height:100%;z-index:15;display:none;flex-direction:column;align-items:center;justify-content:center;}
+.overlay.active{display:flex;}
+/* TITLE */
+#titleScreen{background:linear-gradient(180deg,#0a0618,#1a0a35 60%,#0d1a2e);}
+.title-moon{width:148px;height:148px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#fff9e8,#f0c96a 40%,#c8922a 80%,#7a4a0a);box-shadow:0 0 80px 30px rgba(212,168,67,.4),0 0 160px 60px rgba(212,168,67,.15);margin-bottom:26px;animation:moonP 3s ease-in-out infinite;}
+@keyframes moonP{0%,100%{box-shadow:0 0 80px 30px rgba(212,168,67,.4),0 0 160px 60px rgba(212,168,67,.15);}50%{box-shadow:0 0 100px 40px rgba(212,168,67,.55),0 0 200px 80px rgba(212,168,67,.2);}}
+.title-arabic{font-size:2.7rem;color:var(--gold2);letter-spacing:8px;text-shadow:0 0 30px rgba(212,168,67,.7);margin-bottom:6px;font-family:'Cinzel Decorative',cursive;text-align:center;}
+.title-sub{font-size:.9rem;color:rgba(245,232,200,.7);letter-spacing:4px;text-transform:uppercase;margin-bottom:6px;}
+.title-year{font-size:1.15rem;color:var(--gold);letter-spacing:6px;margin-bottom:28px;}
+.title-desc{font-size:.92rem;color:rgba(245,232,200,.6);max-width:390px;text-align:center;line-height:1.85;margin-bottom:38px;font-style:italic;}
+.stars-layer{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;}
+/* BUTTONS */
+.btn-gold{background:linear-gradient(135deg,#7a3a00,#c8722a,#d4a843);border:none;color:#fff;font-family:'Cinzel Decorative',cursive;font-size:.95rem;padding:13px 42px;border-radius:4px;cursor:pointer;letter-spacing:3px;box-shadow:0 0 28px rgba(212,168,67,.4);transition:all .3s;}
+.btn-gold:hover{transform:scale(1.05);box-shadow:0 0 48px rgba(212,168,67,.7);}
+.btn-outline{background:transparent;border:1px solid var(--gold);color:var(--gold);font-family:'Cinzel Decorative',cursive;font-size:.82rem;padding:10px 30px;border-radius:4px;cursor:pointer;letter-spacing:2px;transition:all .3s;}
+.btn-outline:hover{background:rgba(212,168,67,.15);}
+/* STORY */
+#storyScreen{background:rgba(10,6,24,.97);padding:40px;}
+.story-panel{max-width:620px;text-align:center;}
+.s-icon{font-size:3.4rem;margin-bottom:16px;filter:drop-shadow(0 0 18px rgba(212,168,67,.6));}
+.s-title{font-family:'Cinzel Decorative',cursive;font-size:1.5rem;color:var(--gold2);margin-bottom:16px;}
+.s-text{font-size:1.02rem;line-height:2;color:var(--cream);margin-bottom:20px;font-style:italic;opacity:0;transition:opacity .7s;}
+.s-text.vis{opacity:1;}
+.s-dots{display:flex;gap:7px;justify-content:center;margin-bottom:26px;}
+.sdot{width:8px;height:8px;border-radius:50%;background:rgba(212,168,67,.22);transition:background .4s;}
+.sdot.done{background:var(--gold);}
+.ornament{color:var(--gold);font-size:.95rem;letter-spacing:8px;opacity:.5;margin:9px 0;}
+/* HUD */
+#hud{position:fixed;top:0;left:0;width:100%;z-index:20;display:none;padding:11px 22px;justify-content:space-between;align-items:center;background:linear-gradient(180deg,rgba(10,6,24,.9),transparent);}
+#hud.on{display:flex;}
+.hud-stage{font-family:'Cinzel Decorative',cursive;font-size:.68rem;color:var(--gold);letter-spacing:3px;}
+.hud-scene{font-size:.9rem;color:var(--cream);}
+.hud-val{font-family:'Cinzel Decorative',cursive;font-size:1rem;color:var(--gold2);}
+.hud-lbl{font-size:.58rem;color:rgba(245,232,200,.5);letter-spacing:2px;text-transform:uppercase;}
+.prog-wrap{position:fixed;bottom:0;left:0;width:100%;height:4px;z-index:21;background:rgba(255,255,255,.05);}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--teal),var(--gold),var(--rose));transition:width .6s;}
+/* BANNER */
+.banner{background:rgba(10,6,24,.93);border:1px solid rgba(212,168,67,.3);border-radius:6px;padding:13px 26px;text-align:center;max-width:510px;backdrop-filter:blur(8px);margin-bottom:26px;}
+.bn-title{font-family:'Cinzel Decorative',cursive;font-size:.9rem;color:var(--gold2);margin-bottom:5px;}
+.bn-body{font-size:.85rem;color:rgba(245,232,200,.85);line-height:1.6;}
+.bn-timer{font-size:1.25rem;font-family:'Cinzel Decorative',cursive;color:var(--gold);margin-top:7px;}
+/* MODAL */
+.modal{position:fixed;top:0;left:0;width:100%;height:100%;z-index:50;display:none;align-items:center;justify-content:center;background:rgba(10,6,24,.88);backdrop-filter:blur(6px);}
+.modal.show{display:flex;}
+.modal-box{background:linear-gradient(145deg,#120a2e,#1a0a35);border:1px solid rgba(212,168,67,.4);border-radius:10px;padding:36px;max-width:400px;text-align:center;box-shadow:0 0 70px rgba(212,168,67,.2);}
+.m-icon{font-size:2.6rem;margin-bottom:13px;}
+.m-title{font-family:'Cinzel Decorative',cursive;font-size:1.25rem;color:var(--gold2);margin-bottom:9px;}
+.m-body{font-size:.92rem;color:var(--cream);line-height:1.8;margin-bottom:18px;font-style:italic;}
+.m-pts{font-family:'Cinzel Decorative',cursive;font-size:.95rem;color:var(--gold);margin-bottom:20px;}
+/* CARDS */
+.cgrid{display:grid;gap:13px;}
+.card{background:rgba(212,168,67,.07);border:1px solid rgba(212,168,67,.22);border-radius:8px;padding:15px 11px;cursor:pointer;transition:all .22s;text-align:center;}
+.card:hover{background:rgba(212,168,67,.17);border-color:var(--gold);transform:translateY(-3px);}
+.card.right{background:rgba(26,180,100,.22);border-color:#1ab464;animation:glG .6s;}
+.card.wrong{background:rgba(192,57,75,.22);border-color:var(--rose);animation:shake .4s;}
+.card.locked{pointer-events:none;}
+.cem{font-size:1.8rem;display:block;margin-bottom:6px;}
+.clbl{font-size:.75rem;color:var(--cream);}
+@keyframes glG{0%{box-shadow:0 0 0 0 rgba(26,180,100,.5);}50%{box-shadow:0 0 26px 7px rgba(26,180,100,.3);}100%{box-shadow:0 0 0 0 rgba(26,180,100,0);}}
+@keyframes shake{0%,100%{transform:translateX(0);}25%{transform:translateX(-6px);}75%{transform:translateX(6px);}}
+/* MOON */
+#moonGame{background:radial-gradient(ellipse at 50% 110%,#1a0a35,#0a0618 60%);}
+.moon-area{position:relative;width:100%;height:100%;cursor:crosshair;}
+.moon-tgt{position:absolute;width:74px;height:74px;border-radius:50%;cursor:pointer;transition:opacity .5s;background:radial-gradient(circle at 35% 35%,rgba(255,249,232,.9),rgba(240,201,106,.6) 40%,rgba(200,146,42,.3) 80%,transparent);box-shadow:0 0 26px rgba(240,201,106,.4);}
+.cloud{position:absolute;border-radius:50%;background:rgba(28,18,55,.83);}
+/* LANTERN */
+#lanternGame{background:linear-gradient(180deg,#07030f,#180922);}
+.lantern-row{display:flex;gap:22px;justify-content:center;flex-wrap:wrap;max-width:720px;}
+.lw{cursor:pointer;text-align:center;transition:all .3s;}
+.lw svg{width:50px;height:78px;transition:all .4s;display:block;margin:0 auto;}
+.lw-lbl{font-size:.65rem;color:rgba(245,232,200,.4);margin-top:5px;}
+.lw.lit .lw-lbl{color:var(--gold2);}
+/* FEAST */
+#feastGame{background:linear-gradient(160deg,#0a0618,#0c1a16);}
+/* GIFT */
+#giftGame{background:linear-gradient(160deg,#0a0618,#1c0828);}
+/* CALLI */
+#calliGame{background:linear-gradient(160deg,#0a0618,#0f0a28);}
+.calli-opts{display:grid;grid-template-columns:1fr 1fr;gap:14px;max-width:560px;}
+.cc{background:rgba(61,31,122,.14);border:1px solid rgba(61,31,122,.38);border-radius:9px;padding:20px 16px;cursor:pointer;text-align:center;transition:all .25s;}
+.cc:hover{background:rgba(61,31,122,.28);border-color:#7a4ac8;transform:scale(1.03);}
+.cc.right{background:rgba(26,180,100,.2);border-color:#1ab464;}
+.cc.wrong{background:rgba(192,57,75,.2);border-color:var(--rose);}
+.cc-ar{font-size:1.9rem;color:var(--gold2);margin-bottom:9px;direction:rtl;}
+.cc-hint{font-size:.77rem;color:rgba(245,232,200,.7);}
+/* PRAYER MATCH */
+#prayerGame{background:linear-gradient(160deg,#0a0618,#0a1820);}
+.match-row{display:flex;gap:18px;max-width:660px;}
+.match-col{flex:1;display:flex;flex-direction:column;gap:9px;}
+.mi{background:rgba(26,107,107,.12);border:1px solid rgba(26,107,107,.33);border-radius:7px;padding:11px 13px;cursor:pointer;font-size:.82rem;color:var(--cream);transition:all .22s;text-align:center;}
+.mi:hover{background:rgba(26,107,107,.26);border-color:var(--teal);}
+.mi.sel{background:rgba(212,168,67,.2);border-color:var(--gold);}
+.mi.matched{background:rgba(26,180,100,.18);border-color:#1ab464;pointer-events:none;color:#9ee8b0;}
+.mi.wf{background:rgba(192,57,75,.2);border-color:var(--rose);}
+/* TASBIH */
+#tasbihGame{background:linear-gradient(160deg,#0a0618,#0a1a16);}
+.bead-area{display:flex;flex-wrap:wrap;gap:9px;justify-content:center;max-width:490px;margin:0 auto 22px;}
+.bead{width:42px;height:42px;border-radius:50%;background:rgba(212,168,67,.1);border:1px solid rgba(212,168,67,.28);cursor:pointer;transition:all .22s;display:flex;align-items:center;justify-content:center;font-size:.72rem;color:rgba(245,232,200,.35);}
+.bead.done{background:var(--gold);border-color:var(--gold2);color:#3a1a00;font-weight:700;box-shadow:0 0 12px rgba(212,168,67,.55);cursor:default;}
+.tasbih-n{font-family:'Cinzel Decorative',cursive;font-size:2.8rem;color:var(--gold2);margin:8px 0;}
+.tasbih-p{font-size:1.05rem;color:var(--cream);letter-spacing:2px;font-style:italic;margin-bottom:14px;}
+/* HENNA */
+#hennaGame{background:linear-gradient(160deg,#0a0618,#180a10);}
+.hgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:13px;max-width:460px;}
+.htile{background:rgba(192,57,75,.09);border:1px solid rgba(192,57,75,.28);border-radius:8px;padding:17px 12px;cursor:pointer;text-align:center;transition:all .25s;}
+.htile:hover{background:rgba(192,57,75,.22);border-color:var(--rose);transform:scale(1.04);}
+.htile.right{background:rgba(26,180,100,.2);border-color:#1ab464;}
+.htile.wrong{background:rgba(192,57,75,.3);border-color:var(--rose);}
+.hem{font-size:1.65rem;display:block;margin-bottom:6px;}
+.hlbl{font-size:.72rem;color:var(--cream);}
+/* TAKBIR */
+#takbirGame{background:linear-gradient(160deg,#0a0618,#1a0a10);}
+/* FINALE */
+#fireworksScreen{background:#04020e;}
+#fwCanvas{position:absolute;top:0;left:0;width:100%;height:100%;}
+.finale-wrap{position:relative;z-index:2;text-align:center;animation:fadeIn .9s ease forwards;}
+.finale-title{font-size:2.7rem;color:var(--gold2);font-family:'Cinzel Decorative',cursive;text-shadow:0 0 40px rgba(212,168,67,.8);margin-bottom:10px;}
+.finale-sub{font-size:1.05rem;color:var(--cream);letter-spacing:4px;margin-bottom:24px;}
+.finale-score{font-size:1.7rem;font-family:'Cinzel Decorative',cursive;color:var(--gold);margin-bottom:34px;}
+.particle{position:fixed;pointer-events:none;z-index:5;opacity:0;animation:floatUp linear infinite;}
+@keyframes floatUp{0%{transform:translateY(100vh) rotate(0deg);opacity:0;}10%{opacity:.8;}90%{opacity:.4;}100%{transform:translateY(-20px) rotate(720deg);opacity:0;}}
+@keyframes fadeIn{from{opacity:0;transform:translateY(18px);}to{opacity:1;transform:translateY(0);}}
+</style>
+</head>
+<body>
+<canvas id="canvas3d"></canvas>
+<div id="particles"></div>
+
+<!-- HUD -->
+<div id="hud">
+  <div><div class="hud-stage" id="hudStage">STAGE 1</div><div class="hud-scene" id="hudScene"></div></div>
+  <div style="display:flex;gap:20px">
+    <div style="text-align:right"><div class="hud-lbl">Stars</div><div class="hud-val" id="hudStars">⭐ 0</div></div>
+    <div style="text-align:right"><div class="hud-lbl">Blessings</div><div class="hud-val" id="hudScore">0</div></div>
+  </div>
+</div>
+<div class="prog-wrap"><div class="prog-fill" id="progFill" style="width:0%"></div></div>
+
+<!-- TITLE -->
+<div class="screen active" id="titleScreen">
+  <canvas class="stars-layer" id="starsCanvas"></canvas>
+  <div class="title-moon"></div>
+  <div class="title-arabic">Eid ul-Fitr 2026</div>
+  <div class="title-sub">The Night of the Moon</div>
+  <div class="title-year">☪ Shawwal 1447 AH ☪</div>
+  <div class="title-desc">Ten sacred stages — from the first crescent to the final firework. Celebrate Eid through knowledge, tradition, and joy.</div>
+  <button class="btn-gold" onclick="startGame()">Begin the Journey</button>
+  <div class="ornament" style="margin-top:18px">✦ ✧ ✦ ✧ ✦</div>
+</div>
+
+<!-- STORY -->
+<div class="screen" id="storyScreen">
+  <div class="story-panel">
+    <div class="s-icon" id="sIcon"></div>
+    <div class="s-title" id="sTitle"></div>
+    <div class="ornament">✦ ✧ ✦</div>
+    <div class="s-text" id="sText"></div>
+    <div class="s-dots" id="sDots"></div>
+    <button class="btn-outline" id="storyBtn">Continue →</button>
+  </div>
+</div>
+
+<!-- S1 MOON -->
+<div class="overlay" id="moonGame">
+  <div class="moon-area" id="moonArea"></div>
+  <div class="banner" style="position:fixed;top:68px;left:50%;transform:translateX(-50%);z-index:30;pointer-events:none;">
+    <div class="bn-title">🌙 Stage 1 — Sight the Crescent</div>
+    <div class="bn-body">The moon hides behind clouds. Click it <b>5 times</b> before time runs out!</div>
+    <div class="bn-timer" id="moonTimer">60s</div>
+  </div>
+</div>
+
+<!-- S2 ZAKAT -->
+<div class="overlay" id="zakatGame">
+  <div class="banner"><div class="bn-title">💰 Stage 2 — Zakat Knowledge</div><div class="bn-body" id="zQ"></div></div>
+  <div class="cgrid" style="grid-template-columns:repeat(2,1fr);max-width:460px;" id="zGrid"></div>
+  <div style="margin-top:14px;font-size:.82rem;color:rgba(245,232,200,.42);" id="zProg"></div>
+</div>
+
+<!-- S3 LANTERN -->
+<div class="overlay" id="lanternGame">
+  <div class="banner">
+    <div class="bn-title">🏮 Stage 3 — The Lantern Ceremony</div>
+    <div class="bn-body">Eight lanterns numbered 1–8 by their prayer-time order. The labels are hidden — light them in the right sequence from memory!</div>
+  </div>
+  <div class="lantern-row" id="lanternRow"></div>
+  <div style="margin-top:18px;font-size:.88rem;color:var(--gold);letter-spacing:2px;" id="lanternStatus"></div>
+</div>
+
+<!-- S4 FEAST -->
+<div class="overlay" id="feastGame">
+  <div class="banner"><div class="bn-title">🍽️ Stage 4 — The Eid Feast</div><div class="bn-body" id="fQ"></div></div>
+  <div class="cgrid" style="grid-template-columns:repeat(3,1fr);max-width:540px;" id="fGrid"></div>
+  <div style="margin-top:13px;font-size:.8rem;color:rgba(245,232,200,.42);" id="fProg"></div>
+</div>
+
+<!-- S5 GIFT -->
+<div class="overlay" id="giftGame">
+  <div class="banner"><div class="bn-title">🎁 Stage 5 — Give Eidi Gifts</div><div class="bn-body" id="gHint"></div></div>
+  <div id="gPerson" style="font-size:3rem;margin-bottom:4px;text-align:center;"></div>
+  <div id="gName" style="font-size:.95rem;color:var(--cream);letter-spacing:2px;margin-bottom:22px;text-align:center;"></div>
+  <div class="cgrid" style="grid-template-columns:repeat(4,1fr);max-width:490px;" id="gGrid"></div>
+  <div style="margin-top:13px;font-size:.8rem;color:rgba(245,232,200,.42);" id="gProg"></div>
+</div>
+
+<!-- S6 CALLI -->
+<div class="overlay" id="calliGame">
+  <div class="banner"><div class="bn-title">✍️ Stage 6 — Eid Calligraphy</div><div class="bn-body" id="cQ"></div></div>
+  <div class="calli-opts" id="cGrid"></div>
+  <div style="margin-top:14px;font-size:.8rem;color:rgba(245,232,200,.42);" id="cProg"></div>
+</div>
+
+<!-- S7 PRAYER MATCH -->
+<div class="overlay" id="prayerGame">
+  <div class="banner"><div class="bn-title">🕌 Stage 7 — Match the Prayers</div><div class="bn-body">Click a prayer name on the left, then its meaning on the right.</div></div>
+  <div class="match-row" id="matchRow"></div>
+  <div style="margin-top:14px;font-size:.8rem;color:rgba(245,232,200,.42);" id="matchProg"></div>
+</div>
+
+<!-- S8 TASBIH -->
+<div class="overlay" id="tasbihGame">
+  <div class="banner"><div class="bn-title">📿 Stage 8 — The Tasbih</div><div class="bn-body">Complete 33 presses for each of the three phrases of remembrance. Press the beads in order!</div></div>
+  <div class="tasbih-n" id="tasbihN">0</div>
+  <div class="tasbih-p" id="tasbihP">SubhanAllah</div>
+  <div class="bead-area" id="beadArea"></div>
+  <div style="font-size:.8rem;color:rgba(245,232,200,.42);" id="tasbihProg"></div>
+</div>
+
+<!-- S9 HENNA -->
+<div class="overlay" id="hennaGame">
+  <div class="banner"><div class="bn-title">🌸 Stage 9 — Henna Patterns</div><div class="bn-body" id="hQ"></div></div>
+  <div class="hgrid" id="hGrid"></div>
+  <div style="margin-top:14px;font-size:.8rem;color:rgba(245,232,200,.42);" id="hProg"></div>
+</div>
+
+<!-- S10 TAKBIR -->
+<div class="overlay" id="takbirGame">
+  <div class="banner"><div class="bn-title">🔔 Stage 10 — The Takbir</div><div class="bn-body" id="tQ"></div></div>
+  <div class="cgrid" style="grid-template-columns:repeat(2,1fr);max-width:520px;" id="tGrid"></div>
+  <div style="margin-top:14px;font-size:.8rem;color:rgba(245,232,200,.42);" id="tProg"></div>
+</div>
+
+<!-- FINALE -->
+<div class="screen" id="fireworksScreen">
+  <canvas id="fwCanvas"></canvas>
+  <div class="finale-wrap">
+    <div class="finale-title">Eid Mubarak!</div>
+    <div class="finale-sub">عيد مبارك ✦ Blessed Eid</div>
+    <div class="finale-score" id="finaleScore"></div>
+    <button class="btn-gold" onclick="location.reload()">Play Again 🌙</button>
+  </div>
+</div>
+
+<!-- MODAL -->
+<div class="modal" id="modal">
+  <div class="modal-box">
+    <div class="m-icon" id="mIcon"></div>
+    <div class="m-title" id="mTitle"></div>
+    <div class="ornament">✦ ✧ ✦</div>
+    <div class="m-body" id="mBody"></div>
+    <div class="m-pts" id="mPts"></div>
+    <button class="btn-gold" onclick="closeModal()">Continue →</button>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+// ─── STATE ───────────────────────────────────────────────────
+const G={score:0,stars:0,stage:0,cb:null};
+
+const STAGE_IDS   =['moonGame','zakatGame','lanternGame','feastGame','giftGame',
+                    'calliGame','prayerGame','tasbihGame','hennaGame','takbirGame'];
+const STAGE_NAMES =['The Moon Sighting','The Zakat Obligation','The Lantern Ceremony',
+  'The Eid Feast','The Eidi Giving','Eid Calligraphy','Prayer Matching',
+  'The Tasbih Dhikr','Henna Traditions','The Final Takbir'];
+
+const INITS=[initMoon,initZakat,initLantern,initFeast,initGift,initCalli,initPrayer,initTasbih,initHenna,initTakbir];
+
+// ─── THREE.JS BG ─────────────────────────────────────────────
+(()=>{
+  const c=document.getElementById('canvas3d');
+  const ren=new THREE.WebGLRenderer({canvas:c,alpha:true,antialias:true});
+  ren.setPixelRatio(Math.min(devicePixelRatio,2));ren.setSize(innerWidth,innerHeight);ren.setClearColor(0,0);
+  const sc=new THREE.Scene();
+  const cam=new THREE.PerspectiveCamera(60,innerWidth/innerHeight,.1,1000);cam.position.z=5;
+  const sg=new THREE.BufferGeometry();
+  const N=1800,pos=new Float32Array(N*3),col=new Float32Array(N*3);
+  for(let i=0;i<N;i++){pos[i*3]=(Math.random()-.5)*200;pos[i*3+1]=(Math.random()-.5)*200;pos[i*3+2]=(Math.random()-.5)*200;const w=Math.random();col[i*3]=.8+w*.2;col[i*3+1]=.75+w*.2;col[i*3+2]=.6+w*.15;}
+  sg.setAttribute('position',new THREE.BufferAttribute(pos,3));sg.setAttribute('color',new THREE.BufferAttribute(col,3));
+  sc.add(new THREE.Points(sg,new THREE.PointsMaterial({size:.14,vertexColors:true,transparent:true,opacity:.85})));
+  const shapes=[new THREE.OctahedronGeometry(.28),new THREE.TetrahedronGeometry(.22),new THREE.IcosahedronGeometry(.18)];
+  const mats=[new THREE.MeshPhongMaterial({color:0xd4a843,emissive:0x7a4a00,transparent:true,opacity:.45,wireframe:true}),
+              new THREE.MeshPhongMaterial({color:0x1a6b6b,emissive:0x0a3030,transparent:true,opacity:.38,wireframe:true})];
+  const orbs=[];
+  for(let i=0;i<10;i++){const m=new THREE.Mesh(shapes[i%3],mats[i%2]);m.position.set((Math.random()-.5)*16,(Math.random()-.5)*10,(Math.random()-.5)*8-2);m.userData={rs:(Math.random()-.5)*.01,fa:.2+Math.random()*.3,ff:.3+Math.random()*.5,fo:Math.random()*Math.PI*2,by:m.position.y};sc.add(m);orbs.push(m);}
+  const pl=new THREE.PointLight(0xd4a843,1.5,30);pl.position.set(0,3,3);sc.add(pl);sc.add(new THREE.AmbientLight(0x2a1a4a,1.2));
+  let t=0,mx=0,my=0;
+  document.addEventListener('mousemove',e=>{mx=(e.clientX/innerWidth-.5)*2;my=-(e.clientY/innerHeight-.5)*2;});
+  window.addEventListener('resize',()=>{cam.aspect=innerWidth/innerHeight;cam.updateProjectionMatrix();ren.setSize(innerWidth,innerHeight);});
+  (function loop(){requestAnimationFrame(loop);t+=.01;cam.position.x+=(mx*.5-cam.position.x)*.02;cam.position.y+=(my*.3-cam.position.y)*.02;cam.lookAt(0,0,0);orbs.forEach(m=>{const d=m.userData;m.rotation.x+=d.rs;m.rotation.y+=d.rs*1.3;m.position.y=d.by+Math.sin(t*d.ff+d.fo)*d.fa;});ren.render(sc,cam);})();
+})();
+
+// Title stars
+(()=>{const c=document.getElementById('starsCanvas');c.width=innerWidth;c.height=innerHeight;const ctx=c.getContext('2d');const s=Array.from({length:280},()=>({x:Math.random()*innerWidth,y:Math.random()*innerHeight,r:Math.random()*1.7,a:Math.random(),sp:.3+Math.random()*.7}));(function d(){ctx.clearRect(0,0,c.width,c.height);s.forEach(x=>{x.a+=.01*x.sp;ctx.beginPath();ctx.arc(x.x,x.y,x.r,0,Math.PI*2);ctx.fillStyle=`rgba(245,232,200,${.3+.7*Math.abs(Math.sin(x.a))})`;ctx.fill();});requestAnimationFrame(d);})();})();
+
+// Particles
+setInterval(()=>{const e=['☪','✨','🌙','⭐','🏮','✦'];const p=document.createElement('div');p.className='particle';p.textContent=e[Math.floor(Math.random()*e.length)];p.style.cssText=`left:${Math.random()*100}vw;font-size:${.8+Math.random()*1.2}rem;animation-duration:${6+Math.random()*10}s;animation-delay:${Math.random()*4}s;`;document.getElementById('particles').appendChild(p);setTimeout(()=>p.remove(),15000);},1300);
+
+// ─── UTILS ────────────────────────────────────────────────────
+function showScreen(id){document.querySelectorAll('.screen,.overlay').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');}
+function addPts(n){G.score+=n;G.stars=Math.floor(G.score/80);updateHUD();}
+function updateHUD(){
+  document.getElementById('hudStars').textContent='⭐ '+G.stars;
+  document.getElementById('hudScore').textContent=G.score;
+  document.getElementById('hudStage').textContent='STAGE '+G.stage;
+  document.getElementById('hudScene').textContent=STAGE_NAMES[G.stage-1]||'';
+  document.getElementById('progFill').style.width=(G.stage/10*100)+'%';
+}
+function modal(icon,title,body,pts,cb){
+  document.getElementById('mIcon').textContent=icon;
+  document.getElementById('mTitle').textContent=title;
+  document.getElementById('mBody').textContent=body;
+  document.getElementById('mPts').textContent=pts?'+'+pts+' blessings':'';
+  G.cb=cb;
+  document.getElementById('modal').classList.add('show');
+}
+function closeModal(){document.getElementById('modal').classList.remove('show');const f=G.cb;G.cb=null;if(f)f();}
+
+// ─── STORY ENGINE ─────────────────────────────────────────────
+const STORIES=[
+  {icon:'🌙',title:'The Eve of Eid',text:"Ramadan's last night settles over the village. Every eye searches the sky — for when the thin crescent appears, thirty days of fasting give way to the greatest celebration of the year."},
+  {icon:'💰',title:'The Obligation of Giving',text:"Before the Eid prayer, every Muslim who can must give Zakat al-Fitr — a gift that purifies the soul and ensures no neighbour goes hungry on this day of joy."},
+  {icon:'🏮',title:'The Lantern Ceremony',text:"'Eight prayers mark this blessed night and day,' says your grandmother. 'Light the lanterns in order — but the labels have been removed. Trust your memory.'"},
+  {icon:'🍽️',title:'The Feast is Prepared',text:"Steam rises from pots of biryani. A tray of sheer khurma waits on the counter. You must guide the feast — selecting the right dishes for each question."},
+  {icon:'🎁',title:'The Eidi',text:"Cousins arrive in new clothes, eyes bright with expectation. You are in charge of Eidi today — matching the perfect gift to each family member."},
+  {icon:'✍️',title:'The Calligrapher Arrives',text:"A calligrapher sets up beneath the acacia tree with a golden reed pen. He poses challenges to anyone who wishes to learn the beautiful scripts of Eid."},
+  {icon:'🕌',title:'The Imam Speaks',text:"After the Eid prayer, the Imam gathers the young ones. 'Do you know the prayers that shape our day?' Match each prayer name to its meaning."},
+  {icon:'📿',title:'The Tasbih',text:"The prayer beads are passed around. After Eid Salah, complete your Tasbih — 33 counts each of SubhanAllah, Alhamdulillah, and Allahu Akbar."},
+  {icon:'🌸',title:'The Henna Artist',text:"A circle of women sits in the courtyard. The henna artist asks questions about motifs and traditions — only those who answer may have their hands adorned."},
+  {icon:'🔔',title:'The Final Takbir',text:"As the sun sets on Eid, the sky turns rose and gold. The Takbir rings out across rooftops. One final test — and then the fireworks begin!"},
+];
+
+let sIdx=0,sCb=null;
+function startGame(){sIdx=0;sCb=null;showScreen('storyScreen');renderStory();}
+function renderStory(){
+  const s=STORIES[sIdx];
+  document.getElementById('sIcon').textContent=s.icon;
+  document.getElementById('sTitle').textContent=s.title;
+  const t=document.getElementById('sText');t.classList.remove('vis');t.textContent=s.text;setTimeout(()=>t.classList.add('vis'),60);
+  document.getElementById('sDots').innerHTML=STORIES.map((_,i)=>`<div class="sdot${i<sIdx?' done':''}"></div>`).join('');
+  const btn=document.getElementById('storyBtn');
+  if(sCb!==null){
+    // interlude between stages — go straight to the stage
+    const stageToLaunch=sCb;
+    btn.textContent='Begin Stage '+stageToLaunch+' →';
+    btn.onclick=()=>{sCb=null;launchStage(stageToLaunch);};
+  } else {
+    btn.textContent=sIdx<STORIES.length-1?'Continue →':'Begin →';
+    btn.onclick=storyAdvance;
+  }
+}
+function storyAdvance(){sIdx++;if(sIdx>=STORIES.length){launchStage(1);}else{renderStory();}}
+
+function interlude(nextStage){
+  sIdx=nextStage-1; // story at index = stage-1
+  sCb=nextStage;
+  showScreen('storyScreen');
+  renderStory();
+}
+function launchStage(n){
+  G.stage=n;updateHUD();
+  document.getElementById('hud').classList.add('on');
+  showScreen(STAGE_IDS[n-1]);
+  INITS[n-1]();
+}
+
+// ─── STAGE 1: MOON SIGHTING ───────────────────────────────────
+let moonIv,moonSeen=0;
+function initMoon(){
+  moonSeen=0;let t=60;
+  const area=document.getElementById('moonArea');area.innerHTML='';
+  document.getElementById('moonTimer').textContent='60s';
+  // clouds
+  for(let i=0;i<12;i++){
+    const c=document.createElement('div');c.className='cloud';
+    c.style.cssText=`left:${Math.random()*90}%;top:${8+Math.random()*78}%;width:${80+Math.random()*190}px;height:${35+Math.random()*70}px;opacity:${.4+Math.random()*.5};`;
+    area.appendChild(c);let cx=parseFloat(c.style.left);const sp=.25+Math.random()*.45;
+    setInterval(()=>{cx=(cx+sp)%112;if(cx>108)cx=-12;c.style.left=cx+'%';},50);
+  }
+  function placeMoon(){
+    const old=document.getElementById('mTgt');if(old)old.remove();
+    if(moonSeen>=5)return;
+    const m=document.createElement('div');m.className='moon-tgt';m.id='mTgt';
+    m.style.left=(5+Math.random()*82)+'%';m.style.top=(8+Math.random()*78)+'%';m.style.opacity='0';
+    area.appendChild(m);setTimeout(()=>m.style.opacity='1',60);
+    m.onclick=()=>{m.style.opacity='0';m.onclick=null;moonSeen++;addPts(55);document.getElementById('moonTimer').textContent=`Sighted ${moonSeen}/5`;if(moonSeen>=5){clearInterval(moonIv);endMoon(true);return;}setTimeout(placeMoon,1000+Math.random()*1400);};
+  }
+  placeMoon();
+  moonIv=setInterval(()=>{t--;if(moonSeen<5)document.getElementById('moonTimer').textContent=t+'s';if(t<=0){clearInterval(moonIv);endMoon(false);}},1000);
+}
+function endMoon(win){const old=document.getElementById('mTgt');if(old)old.remove();if(win)modal('🌙','Alhamdulillah!','The crescent has been sighted! Eid begins at dawn.','275',()=>interlude(2));else modal('☁️','The Moon Was Shy...','You sighted '+moonSeen+'/5 moons. The scholars confirm via calculation!',moonSeen*25+'',()=>interlude(2));}
+
+// ─── STAGE 2: ZAKAT QUIZ ─────────────────────────────────────
+const ZQS=[
+  {q:'Which is EXEMPT from Zakat al-Mal?',opts:[{e:'🏠',l:'Your home',c:true},{e:'💍',l:'Gold jewellery',c:false},{e:'💵',l:'Cash savings',c:false},{e:'📈',l:'Investments',c:false}]},
+  {q:'Zakat is what percentage of eligible wealth?',opts:[{e:'1️⃣',l:'1%',c:false},{e:'2️⃣',l:'2.5%',c:true},{e:'5️⃣',l:'5%',c:false},{e:'🔟',l:'10%',c:false}]},
+  {q:'Who may NOT receive Zakat?',opts:[{e:'🤲',l:'The poor',c:false},{e:'🏦',l:'A wealthy person',c:true},{e:'✈️',l:'A stranded traveller',c:false},{e:'💸',l:'A debtor',c:false}]},
+  {q:'Zakat al-Fitr must be paid:',opts:[{e:'🌄',l:'Before Eid prayer',c:true},{e:'🌅',l:'After Eid prayer',c:false},{e:'📅',l:'Any Ramadan day',c:false},{e:'🗓️',l:'Any day in Shawwal',c:false}]},
+  {q:'Nisab is the value of approx. how much gold?',opts:[{e:'🥇',l:'85 grams',c:true},{e:'🥈',l:'200 grams',c:false},{e:'💎',l:'500 grams',c:false},{e:'📦',l:'1 kilogram',c:false}]},
+  {q:'Zakat al-Fitr can be given as:',opts:[{e:'🌾',l:'Staple food',c:true},{e:'🏆',l:'Gold trophies',c:false},{e:'🎁',l:'Luxury gifts',c:false},{e:'📱',l:'Electronics',c:false}]},
+];
+let zI=0,zSc=0;
+function initZakat(){zI=0;zSc=0;doZakat();}
+function doZakat(){
+  if(zI>=ZQS.length){modal('💰','Zakat Mastered!',`${zSc}/${ZQS.length} correct! Your generosity purifies the soul.`,zSc*20+'',()=>interlude(3));return;}
+  const q=ZQS[zI];document.getElementById('zQ').textContent=q.q;document.getElementById('zProg').textContent=`Question ${zI+1}/${ZQS.length}`;
+  document.getElementById('zGrid').innerHTML=q.opts.map((o,i)=>`<div class="card" data-i="${i}"><span class="cem">${o.e}</span><div class="clbl">${o.l}</div></div>`).join('');
+  document.querySelectorAll('#zGrid .card').forEach(el=>el.addEventListener('click',function(){
+    const i=+this.getAttribute('data-i');const q=ZQS[zI];
+    document.querySelectorAll('#zGrid .card').forEach(c=>{c.classList.add('locked');c.removeEventListener('click',arguments.callee);});
+    if(q.opts[i].c){this.classList.add('right');zSc++;addPts(85);}else{this.classList.add('wrong');document.querySelectorAll('#zGrid .card').forEach((c,j)=>{if(q.opts[j].c)c.classList.add('right');});addPts(15);}
+    setTimeout(()=>{zI++;doZakat();},950);
+  }));
+}
+
+// ─── STAGE 3: LANTERNS ───────────────────────────────────────
+const LPRAYERS=["Fajr","Shuruq","Zuhr","Asr","Eid Prayer","Maghrib","Isha","Tahajjud"];
+const LC=['#6a5acd','#f0a830','#e05b10','#c83030','#d4a843','#7a3090','#2060a0','#103048'];
+// Numbers 1-8 shown on lanterns = their correct light order. Shuffled on screen.
+let lNext=1,lMap=[];
+function initLantern(){
+  lNext=1;
+  lMap=LPRAYERS.map((name,i)=>({order:i+1,name,color:LC[i]})).sort(()=>Math.random()-.5);
+  document.getElementById('lanternStatus').textContent='Light the Fajr lantern first';
+  document.getElementById('lanternRow').innerHTML=lMap.map((l,i)=>`
+    <div class="lw" id="lw${i}" onclick="clickLantern(${i})">
+      <svg viewBox="0 0 52 80" xmlns="http://www.w3.org/2000/svg">
+        <line x1="26" y1="0" x2="26" y2="9" stroke="#666" stroke-width="1.5"/>
+        <ellipse cx="26" cy="12" rx="10" ry="3.5" fill="#3a3a3a"/>
+        <path d="M12 16 Q8 48 15 64 Q26 74 37 64 Q44 48 40 16 Z" fill="#1a1a2a" stroke="${l.color}" stroke-width="1.5" id="lb${i}"/>
+        <path d="M12 16 Q26 24 40 16" fill="none" stroke="${l.color}" stroke-width=".8"/>
+        <path d="M15 64 Q26 72 37 64" fill="none" stroke="${l.color}" stroke-width=".8"/>
+        <ellipse cx="26" cy="66" rx="9" ry="3" fill="#2a2a2a"/>
+      </svg>
+      <div class="lw-lbl">${l.name}</div>
+    </div>`).join('');
+}
+function clickLantern(i){
+  const w=document.getElementById('lw'+i);if(w.classList.contains('lit'))return;
+  if(lMap[i].order===lNext){
+    w.classList.add('lit');document.getElementById('lb'+i).setAttribute('fill',lMap[i].color+'aa');
+    lNext++;addPts(65);
+    const nextName=lNext<=8?LPRAYERS[lNext-1]:null;document.getElementById('lanternStatus').textContent=nextName?'Next: light the '+nextName+' lantern':'✨ All lanterns lit!';
+    if(lNext>8)setTimeout(()=>modal('🏮','The Night Glows!','All eight lanterns lit in sacred order. The village gleams.','520',()=>interlude(4)),1200);
+  } else {w.style.animation='shake .4s';setTimeout(()=>w.style.animation='',400);G.score=Math.max(0,G.score-8);updateHUD();}
+}
+
+// ─── STAGE 4: FEAST ──────────────────────────────────────────
+const FQS=[
+  {q:'Traditional Eid morning sweet dish in South Asia:',opts:[{e:'🍮',l:'Sheer Khurma',c:true},{e:'🍝',l:'Spaghetti',c:false},{e:'🥗',l:'Caesar Salad',c:false},{e:'🍕',l:'Pizza',c:false},{e:'🌮',l:'Tacos',c:false},{e:'🍱',l:'Sushi',c:false}]},
+  {q:'Eid dessert made from vermicelli & milk:',opts:[{e:'🍜',l:'Seviyan',c:true},{e:'🍩',l:'Doughnuts',c:false},{e:'🍰',l:'Cheesecake',c:false},{e:'🧁',l:'Cupcakes',c:false},{e:'🍦',l:'Ice Cream',c:false},{e:'🥐',l:'Croissant',c:false}]},
+  {q:'Rice dish that is the centrepiece of Eid feasts:',opts:[{e:'🍛',l:'Biryani',c:true},{e:'🍙',l:'Onigiri',c:false},{e:'🥘',l:'Paella',c:false},{e:'🍚',l:'Plain Rice',c:false},{e:'🫕',l:'Tagine',c:false},{e:'🍝',l:'Risotto',c:false}]},
+  {q:'Traditional Middle Eastern Eid cookie:',opts:[{e:'🌰',l:'Mamoul',c:true},{e:'🍪',l:'Oreo',c:false},{e:'🥠',l:'Fortune Cookie',c:false},{e:'🎂',l:'Birthday Cake',c:false},{e:'🍬',l:'Candy',c:false},{e:'🧇',l:'Waffle',c:false}]},
+  {q:'Slow-cooked meat on spiced rice — Arab Eid staple:',opts:[{e:'🍖',l:'Kabsa',c:true},{e:'🌭',l:'Hot Dog',c:false},{e:'🍔',l:'Burger',c:false},{e:'🥙',l:'Gyro',c:false},{e:'🌯',l:'Burrito',c:false},{e:'🥨',l:'Pretzel',c:false}]},
+];
+let fI=0,fSc=0;
+function initFeast(){fI=0;fSc=0;doFeast();}
+function doFeast(){
+  if(fI>=FQS.length){modal('🍽️','A Blessed Feast!',`${fSc}/${FQS.length} dishes chosen correctly!`,fSc*18+'',()=>interlude(5));return;}
+  const q=FQS[fI];document.getElementById('fQ').textContent=q.q;document.getElementById('fProg').textContent=`Round ${fI+1}/${FQS.length}`;
+  document.getElementById('fGrid').innerHTML=q.opts.map((o,i)=>`<div class="card" data-i="${i}"><span class="cem">${o.e}</span><div class="clbl">${o.l}</div></div>`).join('');
+  document.querySelectorAll('#fGrid .card').forEach(el=>el.addEventListener('click',function(){
+    const i=+this.getAttribute('data-i');const q=FQS[fI];
+    document.querySelectorAll('#fGrid .card').forEach(c=>{c.classList.add('locked');});
+    if(q.opts[i].c){this.classList.add('right');fSc++;addPts(75);}else{this.classList.add('wrong');document.querySelectorAll('#fGrid .card').forEach((c,j)=>{if(q.opts[j].c)c.classList.add('right');});addPts(15);}
+    setTimeout(()=>{fI++;doFeast();},1000);
+  }));
+}
+
+// ─── STAGE 5: GIFT ────────────────────────────────────────────
+const GP=[
+  {av:'👴',name:'Dada (Grandpa)',hint:'"I love wisdom and stories."',ans:'📖'},
+  {av:'👵',name:'Dadi (Grandma)',hint:'"Something sweet from the heart."',ans:'🍬'},
+  {av:'👦',name:'Ahmed (Little Brother)',hint:'"I want to play and build!"',ans:'🧩'},
+  {av:'👧',name:'Fatima (Sister)',hint:'"Something colourful to wear."',ans:'👗'},
+  {av:'🧑',name:'Cousin Zaid',hint:'"I love the great outdoors!"',ans:'🧭'},
+];
+const GO=[{e:'📖',l:'Book'},{e:'🍬',l:'Sweets'},{e:'🧩',l:'Puzzle'},{e:'👗',l:'Clothes'},{e:'🧭',l:'Compass'},{e:'💐',l:'Flowers'},{e:'🎮',l:'Game'},{e:'🧸',l:'Plush'}];
+let gI=0,gSc=0;
+function initGift(){gI=0;gSc=0;doGift();}
+function doGift(){
+  if(gI>=GP.length){modal('🎁','Eidi Given!',`${gSc}/${GP.length} perfect matches! The family rejoices.`,gSc*25+'',()=>interlude(6));return;}
+  const p=GP[gI];
+  document.getElementById('gHint').textContent=p.hint;
+  document.getElementById('gPerson').textContent=p.av;
+  document.getElementById('gName').textContent=p.name;
+  document.getElementById('gProg').textContent=`Person ${gI+1} of ${GP.length}`;
+  const sh=[...GO].sort(()=>Math.random()-.5);
+  document.getElementById('gGrid').innerHTML=sh.map((g,i)=>`<div class="card" data-em="${g.e}"><span class="cem">${g.e}</span><div class="clbl">${g.l}</div></div>`).join('');
+  document.querySelectorAll('#gGrid .card').forEach(el=>el.addEventListener('click',function(){
+    const chosen=this.getAttribute('data-em');const ans=GP[gI].ans;
+    document.querySelectorAll('#gGrid .card').forEach(c=>c.classList.add('locked'));
+    if(chosen===ans){this.classList.add('right');gSc++;addPts(90);}
+    else{this.classList.add('wrong');document.querySelectorAll('#gGrid .card').forEach(c=>{if(c.getAttribute('data-em')===ans)c.classList.add('right');});addPts(20);}
+    setTimeout(()=>{gI++;doGift();},1000);
+  }));
+}
+
+// ─── STAGE 6: CALLIGRAPHY ─────────────────────────────────────
+const CQS=[
+  {q:'What does "عيد مبارك" mean?',opts:[{a:'عيد مبارك',h:'Blessed Eid',c:true},{a:'رمضان كريم',h:'Ramadan Kareem',c:false},{a:'السلام عليكم',h:'Peace be upon you',c:false},{a:'بسم الله',h:'In the name of God',c:false}]},
+  {q:'Which phrase means "Happy Eid"?',opts:[{a:'عيد سعيد',h:'Happy Eid',c:true},{a:'عيد مبارك',h:'Blessed Eid',c:false},{a:'كل عام بخير',h:'Every year well',c:false},{a:'ماشاء الله',h:'What God wills',c:false}]},
+  {q:'"تقبل الله منا ومنكم" means:',opts:[{a:'تقبل الله',h:'May God accept from us',c:true},{a:'الله أكبر',h:'God is Greatest',c:false},{a:'الحمد لله',h:'Praise be to God',c:false},{a:'سبحان الله',h:'Glory be to God',c:false}]},
+  {q:'Which phrase follows completing a good deed?',opts:[{a:'الحمد لله',h:'Alhamdulillah',c:true},{a:'سبحان الله',h:'SubhanAllah',c:false},{a:'الله أكبر',h:'Allahu Akbar',c:false},{a:'لا إله إلا الله',h:'No god but Allah',c:false}]},
+  {q:'Arabic word for the Eid prayer:',opts:[{a:'صلاة العيد',h:'Salat al-Eid',c:true},{a:'صلاة الجمعة',h:'Friday prayer',c:false},{a:'صلاة الفجر',h:'Dawn prayer',c:false},{a:'صلاة التراويح',h:'Tarawih prayer',c:false}]},
+];
+let cI=0,cSc=0;
+function initCalli(){cI=0;cSc=0;doCalli();}
+function doCalli(){
+  if(cI>=CQS.length){modal('✍️','Beautifully Written!',`${cSc}/${CQS.length} correct! The calligrapher bows in respect.`,cSc*22+'',()=>interlude(7));return;}
+  const q=CQS[cI];document.getElementById('cQ').textContent=q.q;document.getElementById('cProg').textContent=`Question ${cI+1}/${CQS.length}`;
+  document.getElementById('cGrid').innerHTML=q.opts.map((o,i)=>`<div class="cc" data-i="${i}"><div class="cc-ar">${o.a}</div><div class="cc-hint">${o.h}</div></div>`).join('');
+  document.querySelectorAll('#cGrid .cc').forEach(el=>el.addEventListener('click',function(){
+    const i=+this.getAttribute('data-i');const q=CQS[cI];
+    document.querySelectorAll('#cGrid .cc').forEach(c=>c.removeEventListener('click',()=>{}));
+    document.querySelectorAll('#cGrid .cc').forEach(c=>c.style.pointerEvents='none');
+    if(q.opts[i].c){this.classList.add('right');cSc++;addPts(88);}else{this.classList.add('wrong');document.querySelectorAll('#cGrid .cc').forEach((c,j)=>{if(q.opts[j].c)c.classList.add('right');});addPts(18);}
+    setTimeout(()=>{cI++;doCalli();},950);
+  }));
+}
+
+// ─── STAGE 7: PRAYER MATCHING ────────────────────────────────
+const PP=[{l:'Fajr',r:'Pre-dawn prayer'},{l:'Zuhr',r:'Midday prayer'},{l:'Asr',r:'Afternoon prayer'},{l:'Maghrib',r:'Sunset prayer'},{l:'Isha',r:'Night prayer'}];
+let mLeft=null,mDone=0,mLeftEl=null;
+function initPrayer(){mLeft=null;mDone=0;mLeftEl=null;renderPrayer();}
+function renderPrayer(){
+  const ls=[...PP].sort(()=>Math.random()-.5);
+  const rs=[...PP].sort(()=>Math.random()-.5);
+  document.getElementById('matchProg').textContent=`Matched ${mDone}/${PP.length}`;
+  document.getElementById('matchRow').innerHTML=`
+    <div class="match-col" id="mColL">${ls.map((p,i)=>`<div class="mi" data-v="${p.l}" onclick="selLeft(this,'${p.l}')">${p.l}</div>`).join('')}</div>
+    <div class="match-col" id="mColR">${rs.map((p,i)=>`<div class="mi" data-v="${p.r}" onclick="selRight(this,'${p.r}')">${p.r}</div>`).join('')}</div>`;
+}
+function selLeft(el,v){if(el.classList.contains('matched'))return;document.querySelectorAll('#mColL .mi').forEach(e=>e.classList.remove('sel'));el.classList.add('sel');mLeft=v;mLeftEl=el;}
+function selRight(el,rv){
+  if(!mLeft||el.classList.contains('matched'))return;
+  const pair=PP.find(p=>p.l===mLeft);
+  if(pair&&pair.r===rv){
+    el.classList.add('matched');mLeftEl.classList.add('matched');mLeftEl.classList.remove('sel');
+    mDone++;addPts(80);document.getElementById('matchProg').textContent=`Matched ${mDone}/${PP.length}`;
+    if(mDone>=PP.length)setTimeout(()=>modal('🕌','Prayers Matched!','All five prayers matched perfectly. Masha\'Allah!',mDone*20+'',()=>interlude(8)),700);
+  } else {
+    el.classList.add('wf');mLeftEl.classList.add('wf');
+    setTimeout(()=>{el.classList.remove('wf');mLeftEl.classList.remove('wf','sel');},600);
+    G.score=Math.max(0,G.score-10);updateHUD();
+  }
+  mLeft=null;mLeftEl=null;
+}
+
+// ─── STAGE 8: TASBIH ─────────────────────────────────────────
+const TS=['SubhanAllah','Alhamdulillah','Allahu Akbar'];
+let tSet=0,tCount=0;
+function initTasbih(){tSet=0;tCount=0;renderTasbih();}
+function renderTasbih(){
+  document.getElementById('tasbihP').textContent=TS[tSet];
+  document.getElementById('tasbihN').textContent=tCount;
+  document.getElementById('tasbihProg').textContent=`Set ${tSet+1} of 3 · ${33-tCount} presses remaining`;
+  document.getElementById('beadArea').innerHTML=Array.from({length:33},(_,i)=>`<div class="bead${i<tCount?' done':''}" id="bd${i}">${i<tCount?'✦':''}</div>`).join('');
+  // attach click only to next bead
+  if(tCount<33){const b=document.getElementById('bd'+tCount);if(b)b.onclick=pressBead;}
+}
+function pressBead(){
+  this.classList.add('done');this.textContent='✦';this.onclick=null;tCount++;addPts(4);
+  document.getElementById('tasbihN').textContent=tCount;
+  document.getElementById('tasbihProg').textContent=`Set ${tSet+1} of 3 · ${33-tCount} presses remaining`;
+  if(tCount<33){const b=document.getElementById('bd'+tCount);if(b)b.onclick=pressBead;}
+  if(tCount>=33){setTimeout(()=>{tSet++;tCount=0;if(tSet>=3){modal('📿','Dhikr Complete!','99 counts of remembrance — SubhanAllah, Alhamdulillah, Allahu Akbar.','200',()=>interlude(9));}else{renderTasbih();}},600);}
+}
+
+// ─── STAGE 9: HENNA ──────────────────────────────────────────
+const HQS=[
+  {q:'Which plant is henna paste made from?',opts:[{e:'🌿',l:'Lawsonia inermis',c:true},{e:'🌹',l:'Rose',c:false},{e:'🍃',l:'Mint',c:false},{e:'🌻',l:'Sunflower',c:false}]},
+  {q:'Henna on Eid is traditionally applied to:',opts:[{e:'🤲',l:'Hands & feet',c:true},{e:'😊',l:'Face',c:false},{e:'💪',l:'Shoulders',c:false},{e:'🦵',l:'Knees',c:false}]},
+  {q:'What colour does dried henna leave?',opts:[{e:'🟤',l:'Reddish-brown',c:true},{e:'🔵',l:'Blue',c:false},{e:'⚫',l:'Black',c:false},{e:'🟡',l:'Yellow',c:false}]},
+  {q:'Henna is also called:',opts:[{e:'🌺',l:'Mehndi',c:true},{e:'🌸',l:'Rangoli',c:false},{e:'🎨',l:'Batik',c:false},{e:'🪡',l:'Embroidery',c:false}]},
+  {q:'Henna patterns on Eid traditionally symbolise:',opts:[{e:'🌸',l:'Joy & blessings',c:true},{e:'⚔️',l:'Battle strength',c:false},{e:'💀',l:'Mourning',c:false},{e:'💼',l:'Wealth alone',c:false}]},
+  {q:'How long should henna be left on the skin ideally?',opts:[{e:'⏰',l:'4–8 hours',c:true},{e:'⚡',l:'5 minutes',c:false},{e:'📅',l:'2 days',c:false},{e:'🕐',l:'30 minutes',c:false}]},
+];
+let hI=0,hSc=0;
+function initHenna(){hI=0;hSc=0;doHenna();}
+function doHenna(){
+  if(hI>=HQS.length){modal('🌸','Adorned with Wisdom!',`${hSc}/${HQS.length} correct! Your hands are blessed.`,hSc*20+'',()=>interlude(10));return;}
+  const q=HQS[hI];document.getElementById('hQ').textContent=q.q;document.getElementById('hProg').textContent=`Question ${hI+1}/${HQS.length}`;
+  document.getElementById('hGrid').innerHTML=q.opts.map((o,i)=>`<div class="htile" data-i="${i}"><span class="hem">${o.e}</span><div class="hlbl">${o.l}</div></div>`).join('');
+  document.querySelectorAll('#hGrid .htile').forEach(el=>el.addEventListener('click',function(){
+    const i=+this.getAttribute('data-i');const q=HQS[hI];
+    document.querySelectorAll('#hGrid .htile').forEach(c=>c.style.pointerEvents='none');
+    if(q.opts[i].c){this.classList.add('right');hSc++;addPts(82);}else{this.classList.add('wrong');document.querySelectorAll('#hGrid .htile').forEach((c,j)=>{if(q.opts[j].c)c.classList.add('right');});addPts(15);}
+    setTimeout(()=>{hI++;doHenna();},950);
+  }));
+}
+
+// ─── STAGE 10: TAKBIR ────────────────────────────────────────
+const TKQS=[
+  {q:'What does "Allahu Akbar" mean?',opts:[{e:'✨',l:'God is Greatest',c:true},{e:'🙏',l:'Praise be to God',c:false},{e:'🌟',l:'God is merciful',c:false},{e:'☪️',l:'God is one',c:false}]},
+  {q:'When is the Takbir recited on Eid?',opts:[{e:'🌙',l:'From Eid Eve to prayer',c:true},{e:'🌅',l:'Only after Eid prayer',c:false},{e:'🌃',l:'Only at night',c:false},{e:'📅',l:'Throughout Ramadan',c:false}]},
+  {q:'How many Takbeers are in the 1st Eid prayer rakat?',opts:[{e:'7️⃣',l:'7 Takbeers',c:true},{e:'5️⃣',l:'5 total',c:false},{e:'3️⃣',l:'3 only',c:false},{e:'🔟',l:'10 total',c:false}]},
+  {q:'Eid ul-Fitr marks the end of:',opts:[{e:'🌙',l:'Ramadan',c:true},{e:'📅',l:'Dhul Hijjah',c:false},{e:'🕌',l:'Muharram',c:false},{e:'⭐',l:'Rajab',c:false}]},
+  {q:'The Eid prayer is performed:',opts:[{e:'🌄',l:'In the morning',c:true},{e:'🌆',l:'At sunset',c:false},{e:'🕛',l:'At midnight',c:false},{e:'🌞',l:'At midday',c:false}]},
+  {q:'Eid ul-Fitr 2026 falls in which Islamic month?',opts:[{e:'📿',l:'Shawwal',c:true},{e:'🌙',l:'Ramadan',c:false},{e:'🕋',l:'Dhul Hijjah',c:false},{e:'⭐',l:'Muharram',c:false}]},
+];
+let tkI=0,tkSc=0;
+function initTakbir(){tkI=0;tkSc=0;doTakbir();}
+function doTakbir(){
+  if(tkI>=TKQS.length){modal('🔔','Allahu Akbar!',`${tkSc}/${TKQS.length} correct! The Takbir rings — the fireworks are ready!`,tkSc*25+'',()=>initFinale());return;}
+  const q=TKQS[tkI];document.getElementById('tQ').textContent=q.q;document.getElementById('tProg').textContent=`Question ${tkI+1}/${TKQS.length}`;
+  document.getElementById('tGrid').innerHTML=q.opts.map((o,i)=>`<div class="card" data-i="${i}"><span class="cem">${o.e}</span><div class="clbl">${o.l}</div></div>`).join('');
+  document.querySelectorAll('#tGrid .card').forEach(el=>el.addEventListener('click',function(){
+    const i=+this.getAttribute('data-i');const q=TKQS[tkI];
+    document.querySelectorAll('#tGrid .card').forEach(c=>c.classList.add('locked'));
+    if(q.opts[i].c){this.classList.add('right');tkSc++;addPts(90);}else{this.classList.add('wrong');document.querySelectorAll('#tGrid .card').forEach((c,j)=>{if(q.opts[j].c)c.classList.add('right');});addPts(15);}
+    setTimeout(()=>{tkI++;doTakbir();},950);
+  }));
+}
+
+// ─── FINALE ───────────────────────────────────────────────────
+function initFinale(){
+  document.getElementById('hud').classList.remove('on');
+  showScreen('fireworksScreen');
+  document.getElementById('finaleScore').textContent=`Total Blessings: ${G.score} · Stars: ⭐${G.stars}`;
+  launchFW();
+}
+function launchFW(){
+  const cv=document.getElementById('fwCanvas');cv.width=innerWidth;cv.height=innerHeight;
+  const ctx=cv.getContext('2d');
+  const C=['#d4a843','#f0c96a','#c0394b','#1a6b6b','#7a3ac8','#c83a7a','#fff','#4ac8c8'];
+  class P{constructor(x,y,col){this.x=x;this.y=y;this.col=col;const a=Math.random()*Math.PI*2,s=2+Math.random()*5;this.vx=Math.cos(a)*s;this.vy=Math.sin(a)*s;this.al=1;this.dc=.012+Math.random()*.015;this.sz=2+Math.random()*3;}update(){this.x+=this.vx;this.y+=this.vy;this.vy+=.05;this.al-=this.dc;this.vx*=.99;}draw(){ctx.globalAlpha=this.al;ctx.fillStyle=this.col;ctx.beginPath();ctx.arc(this.x,this.y,this.sz,0,Math.PI*2);ctx.fill();}}
+  class R{constructor(){this.x=innerWidth*.1+Math.random()*innerWidth*.8;this.y=innerHeight;this.vy=-(8+Math.random()*7);this.vx=(Math.random()-.5)*2;this.ty=innerHeight*.1+Math.random()*innerHeight*.5;this.col=C[Math.floor(Math.random()*C.length)];this.done=false;this.tr=[];}update(){this.tr.push({x:this.x,y:this.y});if(this.tr.length>12)this.tr.shift();this.x+=this.vx;this.y+=this.vy;this.vy+=.15;if(this.y<=this.ty&&!this.done)this.explode();}explode(){this.done=true;const n=80+Math.floor(Math.random()*60);for(let i=0;i<n;i++)ps.push(new P(this.x,this.y,this.col));const c2=C[Math.floor(Math.random()*C.length)];for(let i=0;i<30;i++)ps.push(new P(this.x,this.y,c2));}draw(){if(this.done)return;this.tr.forEach((p,i)=>{ctx.globalAlpha=(i/this.tr.length)*.6;ctx.fillStyle=this.col;ctx.beginPath();ctx.arc(p.x,p.y,2,0,Math.PI*2);ctx.fill();});ctx.globalAlpha=1;ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(this.x,this.y,3,0,Math.PI*2);ctx.fill();}}
+  let ps=[],rs=[],f=0;
+  (function loop(){requestAnimationFrame(loop);ctx.globalAlpha=.18;ctx.fillStyle='#04020e';ctx.fillRect(0,0,cv.width,cv.height);ctx.globalAlpha=1;f++;if(f%26===0)rs.push(new R());rs=rs.filter(r=>{r.update();r.draw();return !r.done||ps.length<700;});ps=ps.filter(p=>{p.update();if(p.al>0)p.draw();return p.al>0;});})();
+  setTimeout(()=>{for(let i=0;i<6;i++)setTimeout(()=>rs.push(new R()),i*320);},200);
+}
+</script>
+</body>
+</html>
