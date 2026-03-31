@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Easter Game</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f0f0f0; color: #333; }
+        #gameCanvas { border: 1px solid #000; display: block; margin: auto; }
+        #score { text-align: center; font-size: 24px; }
+    </style>
+</head>
+<body>
+    <div id="score">Score: 0</div>
+    <canvas id="gameCanvas" width="800" height="600"></canvas>
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        let score = 0;
+        let eggs = []; // Array to hold eggs
+        let dayNightCycle = true; // Day time is true, night time is false
+        let multiplier = 1;
+        let bosses = [];
+
+        // Game loop
+        function gameLoop() {
+            update();
+            draw();
+            requestAnimationFrame(gameLoop);
+        }
+
+        function update() {
+            // Update game state
+            if (Math.random() < 0.01) spawnEgg(); // Randomly spawn eggs
+            if (dayNightCycle) {
+                // Logic for day time
+                if (Math.random() < 0.001) spawnBoss(); // Spawn boss
+            } else {
+                // Logic for night time
+                multiplier = 2; // Double score at night
+            }
+            // Update score using multiplier
+            // Logic to update existing objects like moving eggs/bosses
+        }
+
+        function draw() {
+            // Clear canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            // Draw eggs, bosses, UI, etc.
+            drawScore();
+        }
+
+        function drawScore() {
+            ctx.fillText(`Score: ${score}`, canvas.width / 2 - 50, 50);
+        }
+
+        function spawnEgg() {
+            eggs.push({ x: Math.random() * canvas.width, y: Math.random() * canvas.height });
+        }
+
+        function spawnBoss() {
+            bosses.push({ x: Math.random() * canvas.width, y: 0 }); // Spawn boss at the top
+        }
+
+        // Start game loop
+        gameLoop();
+
+        // Toggle day/night as an example
+        setInterval(() => { dayNightCycle = !dayNightCycle; }, 10000); // Toggle every 10 seconds
+    </script>
+</body>
+</html>
