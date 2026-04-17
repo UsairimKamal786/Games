@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Poppy Playtime - Chapter 1</title>
+
+<style>
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Courier New', monospace;
+  background: black;
+  color: white;
+  overflow: hidden;
+}
+
+/* Background image */
+.container {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+}
+
+.container img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: brightness(0.6);
+}
+
+/* Text overlay */
+.overlay {
+  position: absolute;
+  top: 10%;
+  left: 5%;
+}
+
+.overlay h1 {
+  font-size: 50px;
+  margin: 0;
+}
+
+.overlay h2 {
+  font-size: 30px;
+  margin: 10px 0;
+}
+
+.overlay p {
+  width: 400px;
+  line-height: 1.5;
+}
+
+/* Buttons */
+.menu {
+  position: absolute;
+  bottom: 20%;
+  left: 5%;
+}
+
+.menu button {
+  display: block;
+  width: 200px;
+  margin: 10px 0;
+  padding: 10px;
+  font-size: 18px;
+  border: 2px solid white;
+  background: transparent;
+  color: white;
+  cursor: pointer;
+  text-align: left;
+}
+
+.menu button:hover {
+  background: white;
+  color: black;
+}
+
+/* Back button */
+.back {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  font-size: 18px;
+  cursor: pointer;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+  <!-- Replace with your image -->
+  <img src="huggy-wuggy.png" alt="Huggy Wuggy">
+
+  <div class="overlay">
+    <h2>CHAPTER 1</h2>
+    <h1>'A TIGHT SQUEEZE'</h1>
+    <p>
+      As an ex-employee of Playtime Co., you finally return to the factory many years after everybody within disappeared.
+    </p>
+  </div>
+
+  <div class="menu">
+    <button onclick="newGame()">▶ NEW GAME</button>
+    <button onclick="loadGame()">LOAD GAME</button>
+  </div>
+
+  <div class="back" onclick="goBack()">⭘ BACK</div>
+</div>
+
+<script>
+function newGame() {
+  alert("Starting New Game...");
+  // window.location.href = "game.html";
+}
+
+function loadGame() {
+  alert("Loading Game...");
+  // window.location.href = "load.html";
+}
+
+function goBack() {
+  window.location.href = "pp-1-menu.html";
+}
+</script>
+
+</body>
+</html>
