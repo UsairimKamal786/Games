@@ -8,7 +8,7 @@ Below are the versions of our project that are actively supported with security 
 | 5.1.x   | ✅ Supported |
 | 5.0.x   | ❌ Not Supported |
 | 4.0.x   | ✅ Supported |
-| < 4.0   | ❌ Not Supported |
+| < 4.0   | ✅ Supported|
 
 > We strongly recommend upgrading to a supported version to ensure you receive the latest security fixes and improvements.
 
