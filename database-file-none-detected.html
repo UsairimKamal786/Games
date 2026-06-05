@@ -1,0 +1,531 @@
+
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&family=Rajdhani:wght@300;500;700&display=swap');
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+--r:#ff0055;--g:#00ff88;--b:#00cfff;--y:#ffee00;--p:#cc00ff;--o:#ff7700;
+--bg:#030508;--bg2:#060c12;--bg3:#080f18;
+--text:#f0f8ff;--muted:#3a5060;--border:#0a2030;
+}
+body{background:var(--bg);color:var(--text);font-family:'Rajdhani',sans-serif;overflow-x:hidden;min-height:800px}
+
+@keyframes rgb-shift{0%{color:#ff0055}14%{color:#ff7700}28%{color:#ffee00}42%{color:#00ff88}57%{color:#00cfff}71%{color:#cc00ff}85%{color:#ff0055}100%{color:#ff0055}}
+@keyframes border-rgb{0%{border-color:#ff0055}16%{border-color:#ff7700}33%{border-color:#ffee00}50%{border-color:#00ff88}66%{border-color:#00cfff}83%{border-color:#cc00ff}100%{border-color:#ff0055}}
+@keyframes bg-rgb{0%{background-color:rgba(255,0,85,0.08)}16%{background-color:rgba(255,119,0,0.08)}33%{background-color:rgba(255,238,0,0.08)}50%{background-color:rgba(0,255,136,0.08)}66%{background-color:rgba(0,207,255,0.08)}83%{background-color:rgba(204,0,255,0.08)}100%{background-color:rgba(255,0,85,0.08)}}
+@keyframes glow-pulse{0%,100%{text-shadow:0 0 8px #ff0055,0 0 20px #ff005588}25%{text-shadow:0 0 8px #00ff88,0 0 20px #00ff8888}50%{text-shadow:0 0 8px #00cfff,0 0 20px #00cfff88}75%{text-shadow:0 0 8px #cc00ff,0 0 20px #cc00ff88}}
+@keyframes scanline{0%{transform:translateY(-100%)}100%{transform:translateY(100vh)}}
+@keyframes flicker{0%,100%{opacity:1}92%{opacity:1}93%{opacity:0.7}94%{opacity:1}97%{opacity:0.9}98%{opacity:1}}
+@keyframes marquee{0%{transform:translateX(100%)}100%{transform:translateX(-200%)}}
+@keyframes spin-slow{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+@keyframes bar-fill{from{width:0}to{width:var(--w)}}
+@keyframes pixel-in{0%{opacity:0;transform:scale(0.8)}100%{opacity:1;transform:scale(1)}}
+
+.scanline-overlay{position:fixed;top:0;left:0;width:100%;height:3px;background:linear-gradient(transparent,rgba(0,207,255,0.15),transparent);animation:scanline 4s linear infinite;pointer-events:none;z-index:9998}
+.noise{position:fixed;inset:0;pointer-events:none;z-index:1;opacity:0.03;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");background-size:150px}
+.grid-bg{position:fixed;inset:0;pointer-events:none;z-index:0;background-image:linear-gradient(rgba(0,207,255,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(0,207,255,0.04) 1px,transparent 1px);background-size:32px 32px;animation:flicker 8s infinite}
+.hex-bg{position:fixed;inset:0;pointer-events:none;z-index:0;opacity:0.04;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='100'%3E%3Cpath d='M28 0 L56 16 L56 50 L28 66 L0 50 L0 16Z' fill='none' stroke='%2300cfff' stroke-width='0.5'/%3E%3C/svg%3E");background-size:56px 100px}
+
+nav{position:sticky;top:0;z-index:100;background:rgba(3,5,8,0.96);border-bottom:1px solid transparent;animation:border-rgb 3s linear infinite;backdrop-filter:blur(10px);padding:0 20px;height:54px;display:flex;align-items:center;justify-content:space-between}
+.logo{font-family:'Orbitron',monospace;font-size:17px;font-weight:900;letter-spacing:2px;animation:glow-pulse 3s ease-in-out infinite}
+.logo .cq{animation:rgb-shift 3s linear infinite}
+.logo .log{color:var(--text);opacity:0.85}
+.nav-right{display:flex;align-items:center;gap:4px}
+.nb{background:transparent;border:1px solid var(--muted);color:var(--muted);padding:5px 12px;border-radius:3px;cursor:pointer;font-family:'Orbitron',monospace;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;transition:all 0.2s;position:relative;overflow:hidden}
+.nb::before{content:'';position:absolute;inset:0;opacity:0;background:linear-gradient(135deg,rgba(255,0,85,0.15),rgba(0,207,255,0.15));transition:opacity 0.2s}
+.nb:hover::before{opacity:1}
+.nb:hover{animation:border-rgb 1s linear infinite;color:var(--text)}
+.nb.act{animation:border-rgb 1.5s linear infinite;color:var(--text)}
+.nb.posts{border-color:var(--o);color:var(--o)}
+.nb.agents{border-color:var(--p);color:var(--p)}
+.nb.updates{border-color:var(--g);color:var(--g)}
+
+.ticker{background:#050a0f;border-bottom:1px solid #0a2030;padding:8px 0;overflow:hidden;position:relative;z-index:10}
+.ticker-inner{white-space:nowrap;animation:marquee 25s linear infinite;display:inline-block;font-family:'Share Tech Mono',monospace;font-size:11px}
+.ticker-inner span{margin:0 32px;padding:2px 8px;border-radius:2px}
+.t1{color:var(--r);border:1px solid rgba(255,0,85,0.3)}
+.t2{color:var(--g);border:1px solid rgba(0,255,136,0.3)}
+.t3{color:var(--b);border:1px solid rgba(0,207,255,0.3)}
+.t4{color:var(--y);border:1px solid rgba(255,238,0,0.3)}
+.t5{color:var(--p);border:1px solid rgba(204,0,255,0.3)}
+.t6{color:var(--o);border:1px solid rgba(255,119,0,0.3)}
+
+.hero{padding:56px 24px 48px;text-align:center;position:relative;z-index:2;overflow:hidden}
+.hero-badge{display:inline-flex;gap:8px;margin-bottom:20px;flex-wrap:wrap;justify-content:center}
+.hb{font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;padding:4px 10px;border-radius:2px;font-family:'Share Tech Mono',monospace}
+.hb1{background:rgba(255,0,85,0.1);color:var(--r);border:1px solid rgba(255,0,85,0.4)}
+.hb2{background:rgba(0,207,255,0.1);color:var(--b);border:1px solid rgba(0,207,255,0.4)}
+.hb3{background:rgba(0,255,136,0.1);color:var(--g);border:1px solid rgba(0,255,136,0.4)}
+.hb4{background:rgba(204,0,255,0.1);color:var(--p);border:1px solid rgba(204,0,255,0.4)}
+.hero h1{font-family:'Orbitron',monospace;font-size:clamp(30px,6vw,64px);font-weight:900;line-height:1;letter-spacing:3px;margin-bottom:6px}
+.h1-cq{background:linear-gradient(90deg,#ff0055,#ff7700,#ffee00,#00ff88,#00cfff,#cc00ff,#ff0055);background-size:300%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:rgb-move 4s linear infinite}
+@keyframes rgb-move{0%{background-position:0%}100%{background-position:300%}}
+.h1-log{color:var(--text);font-size:0.45em;display:block;letter-spacing:8px;margin-top:4px;font-weight:300;opacity:0.6}
+.hero-sub{font-size:14px;color:var(--muted);max-width:520px;margin:20px auto 32px;line-height:1.7;font-family:'Share Tech Mono',monospace}
+.hero-sub span{animation:rgb-shift 2s linear infinite}
+.hero-btns{display:flex;gap:14px;justify-content:center;flex-wrap:wrap}
+.hbtn{padding:12px 32px;border-radius:3px;cursor:pointer;font-family:'Orbitron',monospace;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;transition:all 0.25s;position:relative;overflow:hidden}
+.hbtn-main{background:linear-gradient(135deg,#ff0055,#ff7700,#ffee00,#00ff88,#00cfff,#cc00ff);background-size:300%;color:#000;border:none;animation:rgb-move 3s linear infinite}
+.hbtn-main:hover{transform:scale(1.05);box-shadow:0 0 30px rgba(0,207,255,0.5)}
+.hbtn-out{background:transparent;color:var(--text);border:1px solid transparent;animation:border-rgb 2s linear infinite}
+.hbtn-out:hover{animation:bg-rgb 1s linear infinite,border-rgb 1s linear infinite}
+
+.stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:1px;background:var(--border);border-top:1px solid var(--border);border-bottom:1px solid var(--border);position:relative;z-index:2}
+.stat{background:var(--bg2);padding:18px 12px;text-align:center;position:relative;overflow:hidden;cursor:default}
+.stat::before{content:'';position:absolute;bottom:0;left:0;right:0;height:2px}
+.stat:nth-child(1)::before{background:var(--r)}
+.stat:nth-child(2)::before{background:var(--b)}
+.stat:nth-child(3)::before{background:var(--g)}
+.stat:nth-child(4)::before{background:var(--p)}
+.stat:nth-child(5)::before{background:var(--y)}
+.stat-num{font-family:'Orbitron',monospace;font-size:24px;font-weight:900;line-height:1}
+.stat:nth-child(1) .stat-num{color:var(--r)}
+.stat:nth-child(2) .stat-num{color:var(--b)}
+.stat:nth-child(3) .stat-num{color:var(--g)}
+.stat:nth-child(4) .stat-num{color:var(--p)}
+.stat:nth-child(5) .stat-num{color:var(--y)}
+.stat-label{font-size:9px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-top:4px;font-family:'Share Tech Mono',monospace}
+
+.page{display:none;position:relative;z-index:2}
+.page.on{display:block}
+
+.section-hdr{padding:32px 24px 20px;display:flex;align-items:center;gap:12px}
+.section-hdr-title{font-family:'Orbitron',monospace;font-size:14px;letter-spacing:3px;text-transform:uppercase;animation:rgb-shift 3s linear infinite}
+.section-hdr-line{flex:1;height:1px;background:linear-gradient(90deg,var(--border),transparent)}
+.section-hdr-badge{font-size:9px;font-family:'Share Tech Mono',monospace;padding:3px 8px;border-radius:2px;letter-spacing:1px}
+
+.filter-row{display:flex;gap:6px;padding:0 24px 20px;flex-wrap:wrap}
+.filt{background:transparent;border:1px solid var(--muted);color:var(--muted);padding:5px 14px;border-radius:2px;cursor:pointer;font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;transition:all 0.2s}
+.filt.f-all.on{border-color:var(--b);color:var(--b);background:rgba(0,207,255,0.08)}
+.filt.f-game.on{border-color:var(--r);color:var(--r);background:rgba(255,0,85,0.08)}
+.filt.f-code.on{border-color:var(--g);color:var(--g);background:rgba(0,255,136,0.08)}
+.filt.f-blog.on{border-color:var(--o);color:var(--o);background:rgba(255,119,0,0.08)}
+.filt:hover{color:var(--text)}
+
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px;padding:0 24px 32px}
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:4px;padding:0;overflow:hidden;cursor:pointer;transition:all 0.25s;animation:pixel-in 0.4s ease both;position:relative}
+.card:hover{transform:translateY(-4px)}
+.card:hover .card-glow{opacity:1}
+.card-glow{position:absolute;inset:-1px;border-radius:4px;opacity:0;pointer-events:none;transition:opacity 0.3s;animation:border-rgb 2s linear infinite}
+.card-top{height:4px}
+.card-game .card-top{background:linear-gradient(90deg,var(--r),var(--o))}
+.card-code .card-top{background:linear-gradient(90deg,var(--g),var(--b))}
+.card-blog .card-top{background:linear-gradient(90deg,var(--o),var(--y))}
+.card-body{padding:16px}
+.card-tag{font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;padding:3px 8px;border-radius:2px;display:inline-block;margin-bottom:10px;font-family:'Share Tech Mono',monospace}
+.tag-game{background:rgba(255,0,85,0.12);color:var(--r);border:1px solid rgba(255,0,85,0.35)}
+.tag-code{background:rgba(0,255,136,0.12);color:var(--g);border:1px solid rgba(0,255,136,0.35)}
+.tag-blog{background:rgba(255,119,0,0.12);color:var(--o);border:1px solid rgba(255,119,0,0.35)}
+.tag-new{background:rgba(204,0,255,0.12);color:var(--p);border:1px solid rgba(204,0,255,0.35);margin-left:4px}
+.tag-hot{background:rgba(255,238,0,0.1);color:var(--y);border:1px solid rgba(255,238,0,0.3);margin-left:4px}
+.card h3{font-size:15px;font-weight:700;margin-bottom:7px;line-height:1.35;color:var(--text)}
+.card p{font-size:12px;color:var(--muted);line-height:1.55;font-family:'Share Tech Mono',monospace}
+.card-foot{padding:12px 16px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;background:rgba(0,0,0,0.2)}
+.card-date{font-size:10px;color:var(--muted);font-family:'Share Tech Mono',monospace}
+.card-read{font-size:10px;font-family:'Orbitron',monospace;letter-spacing:1px;cursor:pointer;background:none;border:none;transition:all 0.2s}
+.card-game .card-read{color:var(--r)}
+.card-code .card-read{color:var(--g)}
+.card-blog .card-read{color:var(--o)}
+
+.agents-wrap{padding:0 24px 32px;display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:14px}
+.agent{background:var(--bg2);border:1px solid var(--border);border-radius:4px;padding:24px 16px;text-align:center;cursor:pointer;transition:all 0.25s;position:relative;overflow:hidden}
+.agent::after{content:'';position:absolute;top:0;left:0;right:0;height:3px}
+.agent:nth-child(1)::after{background:linear-gradient(90deg,var(--r),var(--o))}
+.agent:nth-child(2)::after{background:linear-gradient(90deg,var(--g),var(--b))}
+.agent:nth-child(3)::after{background:linear-gradient(90deg,var(--b),var(--p))}
+.agent:nth-child(4)::after{background:linear-gradient(90deg,var(--p),var(--r))}
+.agent:nth-child(5)::after{background:linear-gradient(90deg,var(--y),var(--o))}
+.agent:nth-child(6)::after{background:linear-gradient(90deg,var(--o),var(--r))}
+.agent:hover{transform:translateY(-4px);animation:border-rgb 1.5s linear infinite}
+.agent-icon{width:54px;height:54px;border-radius:50%;margin:0 auto 12px;display:flex;align-items:center;justify-content:center;font-size:22px;border:2px solid;animation:border-rgb 3s linear infinite}
+.ai1{background:rgba(255,0,85,0.1);animation:border-rgb 3s linear infinite}
+.ai2{background:rgba(0,255,136,0.1)}
+.ai3{background:rgba(0,207,255,0.1)}
+.ai4{background:rgba(204,0,255,0.1)}
+.ai5{background:rgba(255,238,0,0.1)}
+.ai6{background:rgba(255,119,0,0.1)}
+.agent-name{font-family:'Orbitron',monospace;font-size:12px;font-weight:700;margin-bottom:4px;animation:rgb-shift 4s linear infinite}
+.agent-role{font-size:11px;color:var(--muted);font-family:'Share Tech Mono',monospace;margin-bottom:10px}
+.agent-status{display:flex;align-items:center;justify-content:center;gap:5px;font-size:10px;font-family:'Share Tech Mono',monospace}
+.dot{width:6px;height:6px;border-radius:50%}
+.dot-on{background:var(--g);box-shadow:0 0 6px var(--g)}
+.dot-off{background:var(--muted)}
+.dot-soon{background:var(--y);box-shadow:0 0 6px var(--y);animation:flicker 1.5s infinite}
+.status-on{color:var(--g)}
+.status-off{color:var(--muted)}
+.status-soon{color:var(--y)}
+
+.agent-skill-bar{margin-top:12px}
+.skill-row{display:flex;align-items:center;gap:6px;margin-bottom:5px}
+.skill-label{font-size:9px;color:var(--muted);font-family:'Share Tech Mono',monospace;width:44px;text-align:right;letter-spacing:1px}
+.skill-track{flex:1;height:4px;background:var(--border);border-radius:2px;overflow:hidden}
+.skill-fill{height:100%;border-radius:2px;animation:bar-fill 1.2s ease both}
+.sf1{background:linear-gradient(90deg,var(--r),var(--o));--w:88%}
+.sf2{background:linear-gradient(90deg,var(--g),var(--b));--w:95%}
+.sf3{background:linear-gradient(90deg,var(--b),var(--p));--w:82%}
+.sf4{background:linear-gradient(90deg,var(--p),var(--r));--w:78%}
+.sf5{background:linear-gradient(90deg,var(--y),var(--g));--w:90%}
+.sf6{background:linear-gradient(90deg,var(--o),var(--y));--w:85%}
+
+.updates-wrap{padding:0 24px 32px;display:flex;flex-direction:column;gap:12px}
+.upd{background:var(--bg2);border-radius:4px;padding:18px;display:flex;gap:16px;align-items:flex-start;border:1px solid var(--border);transition:all 0.2s;cursor:default}
+.upd:hover{border-color:var(--b)}
+.upd-icon{width:38px;height:38px;border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.ui-r{background:rgba(255,0,85,0.1);border:1px solid rgba(255,0,85,0.3)}
+.ui-g{background:rgba(0,255,136,0.1);border:1px solid rgba(0,255,136,0.3)}
+.ui-b{background:rgba(0,207,255,0.1);border:1px solid rgba(0,207,255,0.3)}
+.ui-p{background:rgba(204,0,255,0.1);border:1px solid rgba(204,0,255,0.3)}
+.ui-y{background:rgba(255,238,0,0.1);border:1px solid rgba(255,238,0,0.3)}
+.ui-o{background:rgba(255,119,0,0.1);border:1px solid rgba(255,119,0,0.3)}
+.upd-content{flex:1}
+.upd-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;gap:8px;flex-wrap:wrap}
+.upd-title{font-size:14px;font-weight:700;color:var(--text)}
+.upd-date{font-size:10px;color:var(--muted);font-family:'Share Tech Mono',monospace}
+.upd-text{font-size:12px;color:var(--muted);line-height:1.55;font-family:'Share Tech Mono',monospace}
+.upd-badge{font-size:9px;padding:2px 7px;border-radius:2px;letter-spacing:1px;font-family:'Share Tech Mono',monospace;font-weight:700;text-transform:uppercase}
+.ub-live{background:rgba(255,0,85,0.15);color:var(--r);border:1px solid rgba(255,0,85,0.4)}
+.ub-new{background:rgba(0,255,136,0.15);color:var(--g);border:1px solid rgba(0,255,136,0.4)}
+.ub-wip{background:rgba(255,238,0,0.1);color:var(--y);border:1px solid rgba(255,238,0,0.3)}
+.ub-done{background:rgba(0,207,255,0.1);color:var(--b);border:1px solid rgba(0,207,255,0.3)}
+.ub-hot{background:rgba(255,119,0,0.1);color:var(--o);border:1px solid rgba(255,119,0,0.3)}
+
+.rainbow-divider{height:3px;background:linear-gradient(90deg,#ff0055,#ff7700,#ffee00,#00ff88,#00cfff,#cc00ff,#ff0055);background-size:300%;animation:rgb-move 4s linear infinite}
+
+.featured-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;padding:0 24px 12px}
+.feat-card{background:var(--bg2);border-radius:4px;overflow:hidden;cursor:pointer;transition:all 0.25s;border:1px solid var(--border);display:flex;gap:0}
+.feat-card:hover{transform:translateY(-3px);animation:border-rgb 1.5s linear infinite}
+.feat-accent{width:4px;flex-shrink:0}
+.fa-r{background:linear-gradient(180deg,var(--r),var(--o))}
+.fa-g{background:linear-gradient(180deg,var(--g),var(--b))}
+.fa-p{background:linear-gradient(180deg,var(--p),var(--b))}
+.feat-info{padding:16px;flex:1}
+.feat-title{font-size:16px;font-weight:700;margin-bottom:5px;color:var(--text)}
+.feat-desc{font-size:12px;color:var(--muted);line-height:1.5;font-family:'Share Tech Mono',monospace;margin-bottom:12px}
+.feat-tags{display:flex;gap:5px;flex-wrap:wrap}
+
+.admin-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.9);z-index:9999;align-items:center;justify-content:center}
+.admin-overlay.on{display:flex}
+.admin-box{background:var(--bg2);border-radius:6px;width:360px;overflow:hidden;position:relative;animation:pixel-in 0.3s ease}
+.admin-top{padding:4px;background:linear-gradient(90deg,#ff0055,#ff7700,#ffee00,#00ff88,#00cfff,#cc00ff);background-size:300%;animation:rgb-move 3s linear infinite}
+.admin-inner{padding:32px}
+.admin-title{font-family:'Orbitron',monospace;font-size:15px;letter-spacing:3px;animation:rgb-shift 2s linear infinite;margin-bottom:4px}
+.admin-sub{font-size:10px;color:var(--muted);font-family:'Share Tech Mono',monospace;letter-spacing:2px;margin-bottom:28px}
+.afield{margin-bottom:16px}
+.afield label{display:block;font-size:10px;color:var(--muted);letter-spacing:2px;margin-bottom:6px;font-family:'Share Tech Mono',monospace;text-transform:uppercase}
+.afield input{width:100%;background:#030508;border:1px solid var(--border);color:var(--text);padding:10px 14px;border-radius:3px;font-family:'Share Tech Mono',monospace;font-size:13px;outline:none;transition:border-color 0.2s}
+.afield input:focus{animation:border-rgb 1.5s linear infinite}
+.asubmit{width:100%;padding:12px;border:none;border-radius:3px;background:linear-gradient(90deg,#ff0055,#ff7700,#ffee00,#00ff88,#00cfff,#cc00ff);background-size:300%;color:#000;font-family:'Orbitron',monospace;font-size:11px;font-weight:700;letter-spacing:2px;cursor:pointer;animation:rgb-move 3s linear infinite;margin-top:6px}
+.asubmit:hover{transform:scale(1.02)}
+.aerr{font-size:11px;color:var(--r);font-family:'Share Tech Mono',monospace;margin-top:10px;text-align:center;min-height:18px}
+.aclose{position:absolute;top:12px;right:14px;background:none;border:none;color:var(--muted);font-size:18px;cursor:pointer;font-family:'Share Tech Mono',monospace;z-index:1}
+.apanel{display:none}
+.apanel-title{font-family:'Orbitron',monospace;font-size:13px;color:var(--g);letter-spacing:3px;margin-bottom:6px}
+.apanel-sub{font-size:10px;color:var(--muted);font-family:'Share Tech Mono',monospace;margin-bottom:20px}
+.ap-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.apbtn{background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:10px 8px;border-radius:3px;cursor:pointer;font-family:'Share Tech Mono',monospace;font-size:11px;text-align:center;transition:all 0.2s;letter-spacing:0.5px}
+.apbtn:hover{animation:border-rgb 1.5s linear infinite;color:var(--text)}
+.apbtn-danger{grid-column:1/-1;color:var(--r);border-color:rgba(255,0,85,0.3)}
+.apbtn-danger:hover{background:rgba(255,0,85,0.08)}
+
+footer{border-top:1px solid var(--border);padding:32px 24px;text-align:center;position:relative;z-index:2}
+.foot-logo{font-family:'Orbitron',monospace;font-size:20px;font-weight:900;background:linear-gradient(90deg,#ff0055,#ff7700,#ffee00,#00ff88,#00cfff,#cc00ff);background-size:300%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:rgb-move 4s linear infinite;margin-bottom:8px}
+.foot-tags{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:12px}
+.ft{font-size:9px;font-family:'Share Tech Mono',monospace;letter-spacing:2px;padding:3px 10px;border-radius:2px}
+.ft1{color:var(--r);border:1px solid rgba(255,0,85,0.3)}
+.ft2{color:var(--g);border:1px solid rgba(0,255,136,0.3)}
+.ft3{color:var(--b);border:1px solid rgba(0,207,255,0.3)}
+.foot-copy{font-size:11px;color:var(--muted);font-family:'Share Tech Mono',monospace}
+.foot-hint{font-size:9px;color:#1a3040;margin-top:6px;font-family:'Share Tech Mono',monospace}
+</style>
+
+<div class="scanline-overlay"></div>
+<div class="noise"></div>
+<div class="grid-bg"></div>
+<div class="hex-bg"></div>
+
+<nav>
+  <div class="logo"><span class="cq">CODEQUEST</span><span class="log">LOG</span></div>
+  <div class="nav-right">
+    <button class="nb act" onclick="goto('home')">HOME</button>
+    <button class="nb posts" onclick="goto('posts')">POSTS</button>
+    <button class="nb agents" onclick="goto('agents')">AGENTS</button>
+    <button class="nb updates" onclick="goto('updates')">UPDATES</button>
+  </div>
+</nav>
+
+<div class="ticker">
+  <div class="ticker-inner">
+    <span class="t1">🎮 GAMING REVIEWS LIVE</span>
+    <span class="t2">💻 NEW CODING TUTORIAL POSTED</span>
+    <span class="t3">⚡ CODEQUESTLOG V1.0 ONLINE</span>
+    <span class="t4">🌈 RGB EVERYTHING</span>
+    <span class="t5">🤖 AI AGENTS ACTIVE</span>
+    <span class="t6">🔥 HOT DROPS THIS WEEK</span>
+    <span class="t1">🎮 GAME REVIEWS EVERY FRIDAY</span>
+    <span class="t2">💡 PYTHON CRASH COURSE AVAILABLE</span>
+    <span class="t3">✍️ BLOG POSTS DAILY</span>
+  
+  </div>
+</div>
+
+<div id="page-home" class="page on">
+  <div class="hero">
+    <div class="hero-badge">
+      <span class="hb hb1">🎮 GAMING</span>
+      <span class="hb hb2">💻 CODING</span>
+      <span class="hb hb3">✍️ BLOGGING</span>
+      <span class="hb hb4">🤖 AI AGENTS</span>
+    </div>
+    <h1><span class="h1-cq">CODEQUESTLOG</span><span class="h1-log">GAME · CODE · WRITE · CONQUER</span></h1>
+    <p class="hero-sub">The <span>ultimate</span> hub for gamers who code and coders who game. Reviews, tutorials, dev diaries, and AI agents — all in one RGB-soaked home base.</p>
+    <div class="hero-btns">
+      <button class="hbtn hbtn-main" onclick="goto('posts')">EXPLORE POSTS</button>
+      <button class="hbtn hbtn-out" onclick="goto('agents')">MEET AGENTS</button>
+    </div>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat"><div class="stat-num">42</div><div class="stat-label">Posts Live</div></div>
+    <div class="stat"><div class="stat-num">6</div><div class="stat-label">AI Agents</div></div>
+    <div class="stat"><div class="stat-num">18</div><div class="stat-label">Game Reviews</div></div>
+    <div class="stat"><div class="stat-num">14</div><div class="stat-label">Code Tuts</div></div>
+    <div class="stat"><div class="stat-num">10</div><div class="stat-label">Blog Entries</div></div>
+  </div>
+
+  <div class="rainbow-divider" style="margin-top:1px"></div>
+
+  <div class="section-hdr">
+    <div class="section-hdr-title">FEATURED</div>
+    <div class="section-hdr-line"></div>
+    <div class="section-hdr-badge" style="color:var(--y);border:1px solid rgba(255,238,0,0.3);background:rgba(255,238,0,0.07)">TOP PICKS</div>
+  </div>
+
+  <div class="featured-row">
+    <div class="feat-card">
+      <div class="feat-accent fa-r"></div>
+      <div class="feat-info">
+        <div class="feat-title">Top 10 Games of 2026</div>
+        <div class="feat-desc">From indie masterpieces to AAA titans — every game worth your time this year, ranked and reviewed.</div>
+        <div class="feat-tags"><span class="card-tag tag-game">GAME</span><span class="card-tag tag-hot">🔥 HOT</span></div>
+      </div>
+    </div>
+    <div class="feat-card">
+      <div class="feat-accent fa-g"></div>
+      <div class="feat-info">
+        <div class="feat-title">Build a REST API in 30min</div>
+        <div class="feat-desc">Node.js + Express from zero to a working API in under half an hour. No fluff, pure code.</div>
+        <div class="feat-tags"><span class="card-tag tag-code">CODE</span><span class="card-tag tag-new">NEW</span></div>
+      </div>
+    </div>
+    <div class="feat-card">
+      <div class="feat-accent fa-p"></div>
+      <div class="feat-info">
+        <div class="feat-title">Why I Quit Windows for Linux</div>
+        <div class="feat-desc">A dev diary about going full open-source. The good, the painful, and the terminal tricks.</div>
+        <div class="feat-tags"><span class="card-tag tag-blog">BLOG</span><span class="card-tag tag-hot">🔥 HOT</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-hdr" style="padding-top:20px">
+    <div class="section-hdr-title">RECENT POSTS</div>
+    <div class="section-hdr-line"></div>
+  </div>
+  <div class="cards">
+    <div class="card card-game"><div class="card-top"></div><div class="card-body"><span class="card-tag tag-game">GAME</span><span class="card-tag tag-new">NEW</span><h3>Elden Ring DLC Deep Dive</h3><p>40 hours in Shadow of the Erdtree. Every boss, every secret, every broken build explained.</p></div><div class="card-foot"><span class="card-date">Jun 5, 2026</span><button class="card-read">READ →</button></div></div>
+    <div class="card card-code"><div class="card-top"></div><div class="card-body"><span class="card-tag tag-code">CODE</span><h3>React vs Vue in 2026</h3><p>Which frontend framework wins the throne? We benchmark, compare DX, and give a verdict.</p></div><div class="card-foot"><span class="card-date">Jun 4, 2026</span><button class="card-read">READ →</button></div></div>
+    <div class="card card-blog"><div class="card-top"></div><div class="card-body"><span class="card-tag tag-blog">BLOG</span><span class="card-tag tag-hot">🔥</span><h3>The Dev Burnout Reality</h3><p>Honest talk about burnout, recovery, and why the hustle culture is eating us alive.</p></div><div class="card-foot"><span class="card-date">Jun 3, 2026</span><button class="card-read">READ →</button></div></div>
+    <div class="card card-game"><div class="card-top"></div><div class="card-body"><span class="card-tag tag-game">GAME</span><h3>Best Indie Picks June 2026</h3><p>Hidden gems you missed this month — curated from itch.io and Steam with full mini reviews.</p></div><div class="card-foot"><span class="card-date">Jun 2, 2026</span><button class="card-read">READ →</button></div></div>
+  </div>
+</div>
+
+<div id="page-posts" class="page">
+  <div class="section-hdr">
+    <div class="section-hdr-title">ALL POSTS</div>
+    <div class="section-hdr-line"></div>
+    <div class="section-hdr-badge" style="color:var(--b);border:1px solid rgba(0,207,255,0.3);background:rgba(0,207,255,0.07)" id="post-count">42 POSTS</div>
+  </div>
+  <div class="filter-row">
+    <button class="filt f-all on" onclick="filt('all',this)">ALL</button>
+    <button class="filt f-game" onclick="filt('game',this)">🎮 GAMING</button>
+    <button class="filt f-code" onclick="filt('code',this)">💻 CODING</button>
+    <button class="filt f-blog" onclick="filt('blog',this)">✍️ BLOG</button>
+  </div>
+  <div class="cards" id="posts-grid">
+    <div class="card card-game" data-cat="game"><div class="card-top"></div><div class="card-body"><span class="card-tag tag-game">GAME</span><span class="card-tag tag-new">NEW</span><h3>Top 10 Games of 2026</h3><p>Every release worth your time this year, ranked by our team after hours of play.</p></div><div class="card-foot"><span class="card-date">Jun 5</span><button class="card-read">READ →</button></div></div>
+    <div class="card card-code" data-cat="code"><div class="card-top"></div><div class="card-body"><span class="card-tag tag-code">CODE</span><span class="card-tag tag-new">NEW</span><h3>REST API in 30 Minutes</h3><p>Node.js + Express. Zero to working backend in 30 mins flat.</p></div><div class="card-foot"><span class="card-date">Jun 3</span><button class="card-read">READ →</button></div></div>
+    <div class="card card-blog" data-cat="blog"><div class="card-top"></div><div class="card-body"><span class="card-tag tag-blog">BLOG</span><h3>Why I Switched to Linux</h3><p>Full open-source dev life — the setup, the struggles, the payoff.</p></div><div class="card-foot"><span class="card-date">Jun 1</span><button class="card-read">READ →</button></div></div>
+    <div class="card card-game" data-cat="game"><div class="card-top"></div><div class="card-body"><span class="card-tag tag-game">GAME</span><h3>Elden Ring DLC Deep Dive</h3><p>40 hours later. Every secret, boss, and broken build in Shadow of the Erdtree.</p></div><div class="card-foot"><span class="card-date">May 28</span><button class="card-read">READ →</button></div></div>
+    <div class="card card-code" data-cat="code"><div class="card-top"></div><div class="card-body"><span class="card-tag tag-code">CODE</span><h3>Python for Game Devs</h3><p>Prototype games in Python with Pygame — from blank canvas to a working demo.</p></div><div class="card-foot"><span class="card-date">May 25</span><button class="card-read">READ →</button></div></div>
+    <div class="card card-blog" data-cat="blog"><div class="card-top"></div><div class="card-body"><span class="card-tag tag-blog">BLOG</span><span class="card-tag tag-hot">🔥</span><h3>Dev Burnout Reality</h3><p>Honest talk about developer burnout, recovery tactics, and reclaiming your flow.</p></div><div class="card-foot"><span class="card-date">May 22</span><button class="card-read">READ →</button></div></div>
+    <div class="card card-game" data-cat="game"><div class="card-top"></div><div class="card-body"><span class="card-tag tag-game">GAME</span><h3>Best Indie Games June 2026</h3><p>Hidden gems curated from itch.io and Steam with full mini-reviews.</p></div><div class="card-foot"><span class="card-date">May 20</span><button class="card-read">READ →</button></div></div>
+    <div class="card card-code" data-cat="code"><div class="card-top"></div><div class="card-body"><span class="card-tag tag-code">CODE</span><h3>React vs Vue in 2026</h3><p>DX benchmarks, ecosystem comparison, and a final verdict on which to learn.</p></div><div class="card-foot"><span class="card-date">May 17</span><button class="card-read">READ →</button></div></div>
+    <div class="card card-blog" data-cat="blog"><div class="card-top"></div><div class="card-body"><span class="card-tag tag-blog">BLOG</span><h3>My Home Lab Setup 2026</h3><p>Everything in my desk setup — monitors, mechanical keyboard, server rack and RGB strips.</p></div><div class="card-foot"><span class="card-date">May 12</span><button class="card-read">READ →</button></div></div>
+    <div class="card card-game" data-cat="game"><div class="card-top"></div><div class="card-body"><span class="card-tag tag-game">GAME</span><h3>Minecraft Redstone Bible</h3><p>From basic circuits to full CPU builds — the definitive Redstone engineering guide.</p></div><div class="card-foot"><span class="card-date">May 8</span><button class="card-read">READ →</button></div></div>
+    <div class="card card-code" data-cat="code"><div class="card-top"></div><div class="card-body"><span class="card-tag tag-code">CODE</span><h3>Git Branching Like a Pro</h3><p>Feature branches, GitFlow, trunk-based dev — which strategy fits your project?</p></div><div class="card-foot"><span class="card-date">May 5</span><button class="card-read">READ →</button></div></div>
+    <div class="card card-blog" data-cat="blog"><div class="card-top"></div><div class="card-body"><span class="card-tag tag-blog">BLOG</span><h3>Learning in Public Works</h3><p>Six months of posting my progress online changed how I code and how I think.</p></div><div class="card-foot"><span class="card-date">Apr 28</span><button class="card-read">READ →</button></div></div>
+  </div>
+</div>
+
+<div id="page-agents" class="page">
+  <div class="section-hdr">
+    <div class="section-hdr-title">AI AGENTS</div>
+    <div class="section-hdr-line"></div>
+    <div class="section-hdr-badge" style="color:var(--p);border:1px solid rgba(204,0,255,0.3);background:rgba(204,0,255,0.07)">6 ONLINE</div>
+  </div>
+  <div class="agents-wrap">
+    <div class="agent">
+      <div class="agent-icon ai1"><i class="ti ti-device-gamepad-2" aria-hidden="true"></i></div>
+      <div class="agent-name">GAMEBOT</div>
+      <div class="agent-role">Game Reviews & Tips</div>
+      <div class="agent-status"><span class="dot dot-on"></span><span class="status-on">ONLINE</span></div>
+      <div class="agent-skill-bar"><div class="skill-row"><span class="skill-label">GAMES</span><div class="skill-track"><div class="skill-fill sf1" style="width:88%"></div></div></div><div class="skill-row"><span class="skill-label">REVIEW</span><div class="skill-track"><div class="skill-fill sf1" style="width:92%"></div></div></div></div>
+    </div>
+    <div class="agent">
+      <div class="agent-icon ai2"><i class="ti ti-terminal-2" aria-hidden="true"></i></div>
+      <div class="agent-name">CODEX</div>
+      <div class="agent-role">Code Help & Debug</div>
+      <div class="agent-status"><span class="dot dot-on"></span><span class="status-on">ONLINE</span></div>
+      <div class="agent-skill-bar"><div class="skill-row"><span class="skill-label">DEBUG</span><div class="skill-track"><div class="skill-fill sf2" style="width:95%"></div></div></div><div class="skill-row"><span class="skill-label">BUILD</span><div class="skill-track"><div class="skill-fill sf2" style="width:89%"></div></div></div></div>
+    </div>
+    <div class="agent">
+      <div class="agent-icon ai3"><i class="ti ti-pencil" aria-hidden="true"></i></div>
+      <div class="agent-name">BLOGAI</div>
+      <div class="agent-role">Content & Writing</div>
+      <div class="agent-status"><span class="dot dot-on"></span><span class="status-on">ONLINE</span></div>
+      <div class="agent-skill-bar"><div class="skill-row"><span class="skill-label">WRITE</span><div class="skill-track"><div class="skill-fill sf3" style="width:82%"></div></div></div><div class="skill-row"><span class="skill-label">SEO</span><div class="skill-track"><div class="skill-fill sf3" style="width:76%"></div></div></div></div>
+    </div>
+    <div class="agent">
+      <div class="agent-icon ai4"><i class="ti ti-shield" aria-hidden="true"></i></div>
+      <div class="agent-name">SITEBOT</div>
+      <div class="agent-role">Site Manager & Guard</div>
+      <div class="agent-status"><span class="dot dot-on"></span><span class="status-on">ONLINE</span></div>
+      <div class="agent-skill-bar"><div class="skill-row"><span class="skill-label">ADMIN</span><div class="skill-track"><div class="skill-fill sf4" style="width:78%"></div></div></div><div class="skill-row"><span class="skill-label">SEC</span><div class="skill-track"><div class="skill-fill sf4" style="width:94%"></div></div></div></div>
+    </div>
+    <div class="agent">
+      <div class="agent-icon ai5"><i class="ti ti-chart-bar" aria-hidden="true"></i></div>
+      <div class="agent-name">STATBOT</div>
+      <div class="agent-role">Analytics & Insights</div>
+      <div class="agent-status"><span class="dot dot-soon"></span><span class="status-soon">BETA</span></div>
+      <div class="agent-skill-bar"><div class="skill-row"><span class="skill-label">DATA</span><div class="skill-track"><div class="skill-fill sf5" style="width:90%"></div></div></div><div class="skill-row"><span class="skill-label">TRACK</span><div class="skill-track"><div class="skill-fill sf5" style="width:85%"></div></div></div></div>
+    </div>
+    <div class="agent">
+      <div class="agent-icon ai6"><i class="ti ti-search" aria-hidden="true"></i></div>
+      <div class="agent-name">SCOUTBOT</div>
+      <div class="agent-role">Game Finder & Scout</div>
+      <div class="agent-status"><span class="dot dot-soon"></span><span class="status-soon">BETA</span></div>
+      <div class="agent-skill-bar"><div class="skill-row"><span class="skill-label">FIND</span><div class="skill-track"><div class="skill-fill sf6" style="width:85%"></div></div></div><div class="skill-row"><span class="skill-label">RANK</span><div class="skill-track"><div class="skill-fill sf6" style="width:79%"></div></div></div></div>
+    </div>
+  </div>
+</div>
+
+<div id="page-updates" class="page">
+  <div class="section-hdr">
+    <div class="section-hdr-title">UPDATES</div>
+    <div class="section-hdr-line"></div>
+    <div class="section-hdr-badge" style="color:var(--g);border:1px solid rgba(0,255,136,0.3);background:rgba(0,255,136,0.07)">CHANGELOG</div>
+  </div>
+  <div class="updates-wrap">
+    <div class="upd"><div class="upd-icon ui-g"><i class="ti ti-rocket" aria-hidden="true" style="color:var(--g)"></i></div><div class="upd-content"><div class="upd-head"><span class="upd-title">CodeQuestLog V1.0 Is Live</span><span class="upd-badge ub-live">LIVE</span><span class="upd-date">Jun 5, 2026</span></div><div class="upd-text">The site is fully up with Posts, Agents, and Updates all working. RGB mode activated. Gaming reviews, coding tutorials, and blog posts are all live now — start exploring.</div></div></div>
+    <div class="upd"><div class="upd-icon ui-b"><i class="ti ti-robot" aria-hidden="true" style="color:var(--b)"></i></div><div class="upd-content"><div class="upd-head"><span class="upd-title">6 AI Agents Deployed</span><span class="upd-badge ub-new">NEW</span><span class="upd-date">Jun 5, 2026</span></div><div class="upd-text">GameBot, CodeX, BlogAI, and SiteBot are fully online. StatBot and ScoutBot are in beta. All agents will become interactive in the next update.</div></div></div>
+    <div class="upd"><div class="upd-icon ui-r"><i class="ti ti-article" aria-hidden="true" style="color:var(--r)"></i></div><div class="upd-content"><div class="upd-head"><span class="upd-title">42 Posts Published</span><span class="upd-badge ub-hot">HOT</span><span class="upd-date">Jun 4, 2026</span></div><div class="upd-text">First batch of 42 posts is live — 18 game reviews, 14 coding tutorials, and 10 blog entries. New posts drop every day. Filter by category in the Posts tab.</div></div></div>
+    <div class="upd"><div class="upd-icon ui-p"><i class="ti ti-palette" aria-hidden="true" style="color:var(--p)"></i></div><div class="upd-content"><div class="upd-head"><span class="upd-title">Full RGB Theme Applied</span><span class="upd-badge ub-done">DONE</span><span class="upd-date">Jun 3, 2026</span></div><div class="upd-text">Rainbow animations, scanline overlay, hex texture background, noise layer, and animated borders are all live. Every element has RGB treatment — the way it should be.</div></div></div>
+    <div class="upd"><div class="upd-icon ui-y"><i class="ti ti-lock" aria-hidden="true" style="color:var(--y)"></i></div><div class="upd-content"><div class="upd-head"><span class="upd-title">Admin Panel Added</span><span class="upd-badge ub-done">DONE</span><span class="upd-date">Jun 2, 2026</span></div><div class="upd-text">Secret admin panel is hidden inside the site. Press A + D together to trigger it. Login with your credentials to access post management, agent control, and site settings.</div></div></div>
+    <div class="upd"><div class="upd-icon ui-o"><i class="ti ti-device-gamepad-2" aria-hidden="true" style="color:var(--o)"></i></div><div class="upd-content"><div class="upd-head"><span class="upd-title">Gaming Section Expanded</span><span class="upd-badge ub-new">NEW</span><span class="upd-date">Jun 1, 2026</span></div><div class="upd-text">18 full game reviews added. Genres covered: RPG, FPS, Indie, Strategy, and Survival. GameBot agent is now able to answer questions about any reviewed title.</div></div></div>
+    <div class="upd"><div class="upd-icon ui-g"><i class="ti ti-terminal-2" aria-hidden="true" style="color:var(--g)"></i></div><div class="upd-content"><div class="upd-head"><span class="upd-title">Coding Tutorials Up</span><span class="upd-badge ub-done">DONE</span><span class="upd-date">May 30, 2026</span></div><div class="upd-text">14 coding tutorials live covering Python, JavaScript, Node.js, React, Git, APIs, and Linux. More dropping weekly. CodeX agent can help debug code mentioned in any post.</div></div></div>
+    <div class="upd"><div class="upd-icon ui-b"><i class="ti ti-chart-bar" aria-hidden="true" style="color:var(--b)"></i></div><div class="upd-content"><div class="upd-head"><span class="upd-title">StatBot Beta Access</span><span class="upd-badge ub-wip">BETA</span><span class="upd-date">May 28, 2026</span></div><div class="upd-text">StatBot is now in beta — tracking page views, popular posts, and agent interactions. Full analytics dashboard coming in V1.1.</div></div></div>
+  </div>
+</div>
+
+<div class="rainbow-divider"></div>
+<footer>
+  <div class="foot-logo">CODEQUESTLOG</div>
+  <div class="foot-tags">
+    <span class="ft ft1">🎮 GAMING</span>
+    <span class="ft ft2">💻 CODING</span>
+    <span class="ft ft3">✍️ BLOGGING</span>
+  </div>
+  <div class="foot-copy">Built by USAIRIM &nbsp;·&nbsp; CodeQuestLog © 2026</div>
+ 
+</footer>
+
+<div class="admin-overlay" id="adm">
+  <div class="admin-box">
+    <div class="admin-top"></div>
+    <button class="aclose" onclick="closeAdm()">✕</button>
+    <div class="admin-inner">
+      <div id="adm-form">
+        <div class="admin-title">ADMIN ACCESS</div>
+        <div class="admin-sub">// CODEQUESTLOG RESTRICTED ZONE</div>
+        <div class="afield"><label>USERNAME</label><input type="text" id="adm-u" placeholder="Enter username" autocomplete="off"/></div>
+        <div class="afield"><label>PASSWORD</label><input type="password" id="adm-p" placeholder="Enter password"/></div>
+        <button class="asubmit" onclick="doAdm()">AUTHENTICATE →</button>
+        <div class="aerr" id="adm-err"></div>
+      </div>
+      <div class="apanel" id="adm-panel">
+        <div class="apanel-title">ACCESS GRANTED ✓</div>
+        <div class="apanel-sub">// WELCOME BACK, USAIRIM</div>
+        <div class="ap-grid">
+          <button class="apbtn">📝 Manage Posts</button>
+          <button class="apbtn">🤖 Manage Agents</button>
+          <button class="apbtn">🔔 Push Update</button>
+          <button class="apbtn">⚙️ Site Settings</button>
+          <button class="apbtn">📊 Analytics</button>
+          <button class="apbtn">🎨 Theme Editor</button>
+          <button class="apbtn apbtn-danger" onclick="closeAdm()">🚪 Logout</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+var _k={};
+document.addEventListener('keydown',function(e){
+  _k[e.key.toLowerCase()]=true;
+  if(_k['a']&&_k['d']){document.getElementById('adm').classList.add('on');setTimeout(function(){document.getElementById('adm-u').focus();},100);_k={};}
+});
+document.addEventListener('keyup',function(e){_k[e.key.toLowerCase()]=false;});
+
+function closeAdm(){
+  document.getElementById('adm').classList.remove('on');
+  document.getElementById('adm-u').value='';
+  document.getElementById('adm-p').value='';
+  document.getElementById('adm-err').textContent='';
+  document.getElementById('adm-form').style.display='block';
+  document.getElementById('adm-panel').style.display='none';
+}
+function doAdm(){
+  var u=document.getElementById('adm-u').value;
+  var p=document.getElementById('adm-p').value;
+  if(u==='Admin'&&p==='USAIRIM$2016#2016#2016'){
+    document.getElementById('adm-form').style.display='none';
+    document.getElementById('adm-panel').style.display='block';
+  } else {
+    document.getElementById('adm-err').textContent='⛔ Access denied. Wrong credentials.';
+  }
+}
+document.addEventListener('DOMContentLoaded',function(){
+  var pi=document.getElementById('adm-p');
+  if(pi)pi.addEventListener('keydown',function(e){if(e.key==='Enter')doAdm();});
+});
+
+function goto(p){
+  document.querySelectorAll('.page').forEach(function(x){x.classList.remove('on');});
+  document.getElementById('page-'+p).classList.add('on');
+  document.querySelectorAll('.nb').forEach(function(b){b.classList.remove('act');});
+}
+
+function filt(cat,el){
+  document.querySelectorAll('.filt').forEach(function(f){f.classList.remove('on');});
+  el.classList.add('on');
+  var cards=document.querySelectorAll('#posts-grid .card');
+  var count=0;
+  cards.forEach(function(c){
+    if(cat==='all'||c.dataset.cat===cat){c.style.display='block';count++;}
+    else c.style.display='none';
+  });
+  document.getElementById('post-count').textContent=count+' POSTS';
+}
+</script>
